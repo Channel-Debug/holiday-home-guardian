@@ -23,8 +23,8 @@ const NuovaTask = () => {
   });
   const [loading, setLoading] = useState(false);
 
-  const { data: case } = useQuery({
-    queryKey: ['case'],
+  const { data: houses } = useQuery({
+    queryKey: ['houses'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('casa')
@@ -91,7 +91,7 @@ const NuovaTask = () => {
                     <SelectValue placeholder="Seleziona una casa" />
                   </SelectTrigger>
                   <SelectContent>
-                    {case?.map((casa) => (
+                    {houses?.map((casa) => (
                       <SelectItem key={casa.id} value={casa.id}>
                         {casa.nome}
                       </SelectItem>
