@@ -1,4 +1,3 @@
-
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -10,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import NuovaTask from "./pages/NuovaTask";
 import TaskCompletate from "./pages/TaskCompletate";
+import ImportCSV from "./pages/ImportCSV";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -69,6 +69,16 @@ const App = () => {
               element={
                 isAuthenticated ? (
                   <Layout><TaskCompletate /></Layout>
+                ) : (
+                  <Login />
+                )
+              } 
+            />
+            <Route 
+              path="/import-csv" 
+              element={
+                isAuthenticated ? (
+                  <Layout><ImportCSV /></Layout>
                 ) : (
                   <Login />
                 )
