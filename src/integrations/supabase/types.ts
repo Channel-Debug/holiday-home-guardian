@@ -9,7 +9,137 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      casa: {
+        Row: {
+          id: string
+          indirizzo: string | null
+          nome: string
+          note: string | null
+        }
+        Insert: {
+          id?: string
+          indirizzo?: string | null
+          nome: string
+          note?: string | null
+        }
+        Update: {
+          id?: string
+          indirizzo?: string | null
+          nome?: string
+          note?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          cognome: string | null
+          email: string | null
+          id: string
+          nome: string | null
+          ruolo: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          cognome?: string | null
+          email?: string | null
+          id: string
+          nome?: string | null
+          ruolo?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          cognome?: string | null
+          email?: string | null
+          id?: string
+          nome?: string | null
+          ruolo?: string | null
+        }
+        Relationships: []
+      }
+      task: {
+        Row: {
+          casa_id: string | null
+          data_completamento: string | null
+          data_creazione: string | null
+          descrizione: string | null
+          id: string
+          operatore: string | null
+          priorita: string | null
+          rilevato_da: string | null
+          stato: string | null
+        }
+        Insert: {
+          casa_id?: string | null
+          data_completamento?: string | null
+          data_creazione?: string | null
+          descrizione?: string | null
+          id?: string
+          operatore?: string | null
+          priorita?: string | null
+          rilevato_da?: string | null
+          stato?: string | null
+        }
+        Update: {
+          casa_id?: string | null
+          data_completamento?: string | null
+          data_creazione?: string | null
+          descrizione?: string | null
+          id?: string
+          operatore?: string | null
+          priorita?: string | null
+          rilevato_da?: string | null
+          stato?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_casa_id_fkey"
+            columns: ["casa_id"]
+            isOneToOne: false
+            referencedRelation: "casa"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_logs: {
+        Row: {
+          azione: string | null
+          id: string
+          task_id: string | null
+          timestamp: string | null
+          utente_id: string | null
+        }
+        Insert: {
+          azione?: string | null
+          id?: string
+          task_id?: string | null
+          timestamp?: string | null
+          utente_id?: string | null
+        }
+        Update: {
+          azione?: string | null
+          id?: string
+          task_id?: string | null
+          timestamp?: string | null
+          utente_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_logs_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "task"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_logs_utente_id_fkey"
+            columns: ["utente_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
