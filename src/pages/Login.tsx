@@ -48,9 +48,9 @@ const Login = () => {
             />
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">
-            Gestione Manutenzioni
+            Monholiday in Manutenzione
           </CardTitle>
-          <p className="text-gray-600">Accedi al sistema MonHoliday</p>
+          <p className="text-gray-600">Sistema di gestione manutenzioni</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">

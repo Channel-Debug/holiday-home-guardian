@@ -11,6 +11,7 @@ import NuovaTask from "./pages/NuovaTask";
 import TaskCompletate from "./pages/TaskCompletate";
 import ImportCSV from "./pages/ImportCSV";
 import NotFound from "./pages/NotFound";
+import Profilo from "./pages/Profilo";
 
 const queryClient = new QueryClient();
 
@@ -79,6 +80,16 @@ const App = () => {
               element={
                 isAuthenticated ? (
                   <Layout><ImportCSV /></Layout>
+                ) : (
+                  <Login />
+                )
+              } 
+            />
+            <Route 
+              path="/profilo" 
+              element={
+                isAuthenticated ? (
+                  <Layout><Profilo /></Layout>
                 ) : (
                   <Login />
                 )

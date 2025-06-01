@@ -10,6 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { ImageUpload } from "@/components/ImageUpload";
+import { TaskImages } from "@/components/TaskImages";
 import type { Tables } from "@/integrations/supabase/types";
 
 const NuovaTask = () => {
@@ -22,6 +24,8 @@ const NuovaTask = () => {
     operatore: "",
   });
   const [loading, setLoading] = useState(false);
+  const [createdTaskId, setCreatedTaskId] = useState<string | null>(null);
+  const [imageRefresh, setImageRefresh] = useState(0);
 
   const { data: houses } = useQuery({
     queryKey: ['houses'],
@@ -43,17 +47,28 @@ const NuovaTask = () => {
     try {
       const { data: user } = await supabase.auth.getUser();
       
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('task')
         .insert({
           ...formData,
           stato: 'da_fare',
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
 
       toast.success("Task creata con successo!");
-      navigate("/");
+      setCreatedTaskId(data.id);
+      
+      // Reset form
+      setFormData({
+        casa_id: "",
+        descrizione: "",
+        priorita: "",
+        rilevato_da: "",
+        operatore: "",
+      });
     } catch (error) {
       console.error('Errore nella creazione della task:', error);
       toast.error("Errore nella creazione della task");
@@ -67,6 +82,10 @@ const NuovaTask = () => {
       ...prev,
       [field]: value
     }));
+  };
+
+  const handleFinish = () => {
+    navigate("/");
   };
 
   return (
@@ -169,6 +188,30 @@ const NuovaTask = () => {
                 </Button>
               </div>
             </form>
+
+            {/* Sezione per upload immagini dopo la creazione */}
+            {createdTaskId && (
+              <div className="mt-6 pt-6 border-t">
+                <h3 className="text-lg font-medium mb-4">Aggiungi Immagini alla Task</h3>
+                <div className="space-y-4">
+                  <TaskImages 
+                    taskId={createdTaskId} 
+                    refresh={imageRefresh}
+                  />
+                  <ImageUpload 
+                    taskId={createdTaskId}
+                    onImageUploaded={() => setImageRefresh(prev => prev + 1)}
+                  />
+                  <Button 
+                    onClick={handleFinish}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    Termina e Torna alla Dashboard
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
