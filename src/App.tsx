@@ -1,3 +1,4 @@
+
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -5,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "./components/Layout";
+import MobileOptimizedLayout from "./components/MobileOptimizedLayout";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import NuovaTask from "./pages/NuovaTask";
@@ -17,6 +19,7 @@ const queryClient = new QueryClient();
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -24,7 +27,14 @@ const App = () => {
       setIsAuthenticated(!!session);
     };
 
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768 || 'ontouchstart' in window);
+    };
+
     checkAuth();
+    checkMobile();
+
+    window.addEventListener('resize', checkMobile);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -32,7 +42,10 @@ const App = () => {
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener('resize', checkMobile);
+    };
   }, []);
 
   if (isAuthenticated === null) {
@@ -43,6 +56,8 @@ const App = () => {
     );
   }
 
+  const LayoutComponent = isMobile ? MobileOptimizedLayout : Layout;
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -51,7 +66,7 @@ const App = () => {
           <Routes>
             <Route path="/login" element={<Login />} />
             {isAuthenticated ? (
-              <Route path="/" element={<Layout><Dashboard /></Layout>} />
+              <Route path="/" element={<LayoutComponent><Dashboard /></LayoutComponent>} />
             ) : (
               <Route path="/" element={<Login />} />
             )}
@@ -59,7 +74,7 @@ const App = () => {
               path="/nuova-task" 
               element={
                 isAuthenticated ? (
-                  <Layout><NuovaTask /></Layout>
+                  <LayoutComponent><NuovaTask /></LayoutComponent>
                 ) : (
                   <Login />
                 )
@@ -69,7 +84,7 @@ const App = () => {
               path="/task-completate" 
               element={
                 isAuthenticated ? (
-                  <Layout><TaskCompletate /></Layout>
+                  <LayoutComponent><TaskCompletate /></LayoutComponent>
                 ) : (
                   <Login />
                 )
@@ -79,7 +94,7 @@ const App = () => {
               path="/import-csv" 
               element={
                 isAuthenticated ? (
-                  <Layout><ImportCSV /></Layout>
+                  <LayoutComponent><ImportCSV /></LayoutComponent>
                 ) : (
                   <Login />
                 )
@@ -89,7 +104,7 @@ const App = () => {
               path="/profilo" 
               element={
                 isAuthenticated ? (
-                  <Layout><Profilo /></Layout>
+                  <LayoutComponent><Profilo /></LayoutComponent>
                 ) : (
                   <Login />
                 )

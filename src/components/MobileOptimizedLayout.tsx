@@ -15,11 +15,11 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-interface LayoutProps {
+interface MobileOptimizedLayoutProps {
   children: React.ReactNode;
 }
 
-const Layout = ({ children }: LayoutProps) => {
+const MobileOptimizedLayout = ({ children }: MobileOptimizedLayoutProps) => {
   const [user, setUser] = useState<any>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
@@ -73,12 +73,12 @@ const Layout = ({ children }: LayoutProps) => {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
+    <div className="flex h-screen bg-gray-50 touch-manipulation">
+      {/* Mobile-first Sidebar */}
       <div className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out
+        fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] bg-white shadow-lg transform transition-transform duration-300 ease-in-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-        lg:translate-x-0 lg:static lg:inset-0
+        lg:w-64 lg:translate-x-0 lg:static lg:inset-0
       `}>
         <div className="flex items-center justify-between h-16 px-6 border-b">
           <div className="flex items-center space-x-3">
@@ -95,11 +95,11 @@ const Layout = ({ children }: LayoutProps) => {
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden"
           >
-            <X className="h-4 w-4" />
+            <X className="h-5 w-5" />
           </Button>
         </div>
 
-        <nav className="mt-6">
+        <nav className="mt-6 pb-4">
           {menuItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
@@ -110,25 +110,25 @@ const Layout = ({ children }: LayoutProps) => {
                   setSidebarOpen(false);
                 }}
                 className={`
-                  w-full flex items-center px-6 py-3 text-left transition-colors
+                  w-full flex items-center px-6 py-4 text-left transition-colors
                   ${isActive 
                     ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700' 
                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                   }
                 `}
               >
-                <item.icon className="h-5 w-5 mr-3" />
-                {item.label}
+                <item.icon className="h-6 w-6 mr-4" />
+                <span className="text-base">{item.label}</span>
               </button>
             );
           })}
 
           <button
             onClick={handleLogout}
-            className="w-full flex items-center px-6 py-3 text-left text-red-600 hover:bg-red-50 transition-colors mt-6"
+            className="w-full flex items-center px-6 py-4 text-left text-red-600 hover:bg-red-50 transition-colors mt-6"
           >
-            <LogOut className="h-5 w-5 mr-3" />
-            Logout
+            <LogOut className="h-6 w-6 mr-4" />
+            <span className="text-base">Logout</span>
           </button>
         </nav>
       </div>
@@ -141,6 +141,7 @@ const Layout = ({ children }: LayoutProps) => {
             variant="ghost"
             size="sm"
             onClick={() => setSidebarOpen(true)}
+            className="p-2"
           >
             <Menu className="h-6 w-6" />
           </Button>
@@ -152,16 +153,18 @@ const Layout = ({ children }: LayoutProps) => {
             />
             <span className="font-semibold text-gray-900">MonHoliday</span>
           </div>
-          <div></div>
+          <div className="w-10"></div>
         </div>
 
-        {/* Page Content */}
-        <main className="flex-1 overflow-auto">
-          {children}
+        {/* Page Content with mobile-optimized scrolling */}
+        <main className="flex-1 overflow-auto overscroll-y-contain">
+          <div className="min-h-full">
+            {children}
+          </div>
         </main>
       </div>
 
-      {/* Overlay per mobile */}
+      {/* Mobile Overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
@@ -172,4 +175,4 @@ const Layout = ({ children }: LayoutProps) => {
   );
 };
 
-export default Layout;
+export default MobileOptimizedLayout;
