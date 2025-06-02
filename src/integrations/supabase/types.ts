@@ -60,6 +60,7 @@ export type Database = {
       task: {
         Row: {
           casa_id: string | null
+          costo_manutenzione: number | null
           data_completamento: string | null
           data_creazione: string | null
           descrizione: string | null
@@ -71,6 +72,7 @@ export type Database = {
         }
         Insert: {
           casa_id?: string | null
+          costo_manutenzione?: number | null
           data_completamento?: string | null
           data_creazione?: string | null
           descrizione?: string | null
@@ -82,6 +84,7 @@ export type Database = {
         }
         Update: {
           casa_id?: string | null
+          costo_manutenzione?: number | null
           data_completamento?: string | null
           data_creazione?: string | null
           descrizione?: string | null

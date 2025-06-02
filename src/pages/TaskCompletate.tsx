@@ -7,9 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { RotateCcw, Search, Filter } from "lucide-react";
+import { RotateCcw, Search, Filter, Edit } from "lucide-react";
 import { toast } from "sonner";
 import { TaskImages } from "@/components/TaskImages";
+import { useIsMobile } from "@/hooks/use-mobile";
+import MobileTaskCard from "@/components/MobileTaskCard";
+import TaskEditModal from "@/components/TaskEditModal";
 import type { Tables } from "@/integrations/supabase/types";
 
 type CompletedTask = Tables<"task"> & {
@@ -20,6 +23,8 @@ const TaskCompletate = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCasa, setSelectedCasa] = useState<string>("all");
   const [selectedPriorita, setSelectedPriorita] = useState<string>("all");
+  const [editingTask, setEditingTask] = useState<CompletedTask | null>(null);
+  const isMobile = useIsMobile();
 
   const { data: completedTasks, refetch } = useQuery({
     queryKey: ['completed-tasks', searchTerm, selectedCasa, selectedPriorita],
@@ -123,9 +128,9 @@ const TaskCompletate = () => {
   );
 
   return (
-    <div className="p-6 space-y-6">
+    <div className={`${isMobile ? 'p-4' : 'p-6'} space-y-6`}>
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Task Completate</h1>
+        <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold text-gray-900`}>Task Completate</h1>
         <p className="text-gray-600">
           {filteredTasks?.length || 0} task completate
         </p>
@@ -144,9 +149,9 @@ const TaskCompletate = () => {
             />
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'} gap-4`}>
             <div>
-              <label className="text-sm font-medium mb-2 block">Filtra per Casa</label>
+              <label className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium mb-2 block`}>Filtra per Casa</label>
               <Select value={selectedCasa} onValueChange={setSelectedCasa}>
                 <SelectTrigger>
                   <SelectValue placeholder="Tutte le case" />
@@ -163,7 +168,7 @@ const TaskCompletate = () => {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">Filtra per Priorità</label>
+              <label className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium mb-2 block`}>Filtra per Priorità</label>
               <Select value={selectedPriorita} onValueChange={setSelectedPriorita}>
                 <SelectTrigger>
                   <SelectValue placeholder="Tutte le priorità" />
@@ -181,57 +186,84 @@ const TaskCompletate = () => {
       </Card>
 
       {/* Lista Task Completate */}
-      <div className="space-y-6">
+      <div className={`space-y-${isMobile ? '4' : '6'}`}>
         {filteredTasks && filteredTasks.length > 0 ? (
           filteredTasks.map((task) => (
-            <Card key={task.id}>
-              <CardContent className="pt-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge variant={getPriorityVariant(task.priorita || '')}>
-                        {task.priorita?.toUpperCase()}
-                      </Badge>
-                      <span className="font-semibold text-lg">{task.casa?.nome}</span>
+            isMobile ? (
+              <MobileTaskCard
+                key={task.id}
+                task={task}
+                onEdit={setEditingTask}
+                onRestore={handleRestoreTask}
+                showEditButton={true}
+                showRestoreButton={true}
+              >
+                <TaskImages taskId={task.id} />
+              </MobileTaskCard>
+            ) : (
+              <Card key={task.id}>
+                <CardContent className="pt-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge variant={getPriorityVariant(task.priorita || '')}>
+                          {task.priorita?.toUpperCase()}
+                        </Badge>
+                        <span className="font-semibold text-lg">{task.casa?.nome}</span>
+                      </div>
+                      
+                      <p className="text-gray-700 mb-3">{task.descrizione}</p>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
+                        <div>
+                          <span className="font-medium">Rilevato da:</span> {task.rilevato_da}
+                        </div>
+                        {task.operatore && (
+                          <div>
+                            <span className="font-medium">Operatore:</span> {task.operatore}
+                          </div>
+                        )}
+                        <div>
+                          <span className="font-medium">Creata il:</span> {formatDate(task.data_creazione)}
+                        </div>
+                        <div>
+                          <span className="font-medium">Completata il:</span> {formatDate(task.data_completamento)}
+                        </div>
+                        {task.costo_manutenzione && (
+                          <div>
+                            <span className="font-medium">Costo (IVA incl.):</span> €{task.costo_manutenzione}
+                          </div>
+                        )}
+                      </div>
                     </div>
                     
-                    <p className="text-gray-700 mb-3">{task.descrizione}</p>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
-                      <div>
-                        <span className="font-medium">Rilevato da:</span> {task.rilevato_da}
-                      </div>
-                      {task.operatore && (
-                        <div>
-                          <span className="font-medium">Operatore:</span> {task.operatore}
-                        </div>
-                      )}
-                      <div>
-                        <span className="font-medium">Creata il:</span> {formatDate(task.data_creazione)}
-                      </div>
-                      <div>
-                        <span className="font-medium">Completata il:</span> {formatDate(task.data_completamento)}
-                      </div>
+                    <div className="flex gap-2 ml-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingTask(task)}
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Modifica
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleRestoreTask(task.id)}
+                      >
+                        <RotateCcw className="h-4 w-4 mr-2" />
+                        Ripristina
+                      </Button>
                     </div>
                   </div>
-                  
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleRestoreTask(task.id)}
-                    className="ml-4"
-                  >
-                    <RotateCcw className="h-4 w-4 mr-2" />
-                    Ripristina
-                  </Button>
-                </div>
 
-                {/* Sezione Immagini */}
-                <div className="border-t pt-4">
-                  <TaskImages taskId={task.id} />
-                </div>
-              </CardContent>
-            </Card>
+                  {/* Sezione Immagini */}
+                  <div className="border-t pt-4">
+                    <TaskImages taskId={task.id} />
+                  </div>
+                </CardContent>
+              </Card>
+            )
           ))
         ) : (
           <Card>
@@ -245,6 +277,19 @@ const TaskCompletate = () => {
           </Card>
         )}
       </div>
+
+      {/* Modal di modifica */}
+      {editingTask && (
+        <TaskEditModal
+          task={editingTask}
+          isOpen={!!editingTask}
+          onClose={() => setEditingTask(null)}
+          onUpdate={() => {
+            refetch();
+            setEditingTask(null);
+          }}
+        />
+      )}
     </div>
   );
 };

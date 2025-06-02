@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -10,6 +9,8 @@ import { CheckCircle2, Home, AlertTriangle, Clock, Filter } from "lucide-react";
 import { toast } from "sonner";
 import { ImageUpload } from "@/components/ImageUpload";
 import { TaskImages } from "@/components/TaskImages";
+import { useIsMobile } from "@/hooks/use-mobile";
+import MobileTaskCard from "@/components/MobileTaskCard";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Task = Tables<"task"> & {
@@ -21,6 +22,7 @@ const Dashboard = () => {
   const [selectedCasa, setSelectedCasa] = useState<string>("all");
   const [selectedPriorita, setSelectedPriorita] = useState<string>("all");
   const [imageRefresh, setImageRefresh] = useState(0);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const getUser = async () => {
@@ -149,66 +151,68 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className={`${isMobile ? 'p-4' : 'p-6'} space-y-6`}>
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600">Benvenuto, {user?.email}</p>
+        <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold text-gray-900`}>Dashboard</h1>
+        {!isMobile && <p className="text-gray-600">Benvenuto, {user?.email}</p>}
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-3'} gap-${isMobile ? '4' : '6'}`}>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Task Attive</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>Task Attive</CardTitle>
+            <Clock className={`h-${isMobile ? '3' : '4'} w-${isMobile ? '3' : '4'} text-muted-foreground`} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{tasks?.length || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              Task da completare
+            <div className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold`}>{tasks?.length || 0}</div>
+            <p className={`${isMobile ? 'text-xs' : 'text-xs'} text-muted-foreground`}>
+              Da completare
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Task Completate</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>Completate</CardTitle>
+            <CheckCircle2 className={`h-${isMobile ? '3' : '4'} w-${isMobile ? '3' : '4'} text-muted-foreground`} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{completedTasksCount || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              Totale completate
+            <div className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold`}>{completedTasksCount || 0}</div>
+            <p className={`${isMobile ? 'text-xs' : 'text-xs'} text-muted-foreground`}>
+              Totale
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Case Gestite</CardTitle>
-            <Home className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{casesCount || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              Totale case
-            </p>
-          </CardContent>
-        </Card>
+        {!isMobile && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Case Gestite</CardTitle>
+              <Home className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{casesCount || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                Totale case
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Filtri */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
+          <CardTitle className={`flex items-center gap-2 ${isMobile ? 'text-lg' : ''}`}>
+            <Filter className={`h-${isMobile ? '4' : '5'} w-${isMobile ? '4' : '5'}`} />
             Filtri
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'} gap-4`}>
             <div>
-              <label className="text-sm font-medium mb-2 block">Filtra per Casa</label>
+              <label className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium mb-2 block`}>Filtra per Casa</label>
               <Select value={selectedCasa} onValueChange={setSelectedCasa}>
                 <SelectTrigger>
                   <SelectValue placeholder="Tutte le case" />
@@ -225,7 +229,7 @@ const Dashboard = () => {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">Filtra per Priorità</label>
+              <label className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium mb-2 block`}>Filtra per Priorità</label>
               <Select value={selectedPriorita} onValueChange={setSelectedPriorita}>
                 <SelectTrigger>
                   <SelectValue placeholder="Tutte le priorità" />
@@ -245,64 +249,84 @@ const Dashboard = () => {
       {/* Task Recenti */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5" />
+          <CardTitle className={`flex items-center gap-2 ${isMobile ? 'text-lg' : ''}`}>
+            <AlertTriangle className={`h-${isMobile ? '4' : '5'} w-${isMobile ? '4' : '5'}`} />
             Task da Completare
           </CardTitle>
         </CardHeader>
         <CardContent>
           {tasks && tasks.length > 0 ? (
-            <div className="space-y-6">
+            <div className={`space-y-${isMobile ? '4' : '6'}`}>
               {tasks.map((task) => (
-                <div key={task.id} className="border rounded-lg p-4 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge variant={getPriorityVariant(task.priorita || '')}>
-                          {task.priorita?.toUpperCase()}
-                        </Badge>
-                        <span className="font-medium text-lg">{task.casa?.nome}</span>
-                      </div>
-                      <p className="text-gray-600 mb-3">{task.descrizione}</p>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-500 mb-3">
-                        <div>
-                          <span className="font-medium">Rilevato da:</span> {task.rilevato_da}
-                        </div>
-                        {task.operatore && (
-                          <div>
-                            <span className="font-medium">Operatore:</span> {task.operatore}
-                          </div>
-                        )}
-                        <div>
-                          <span className="font-medium">Creata il:</span> {formatDate(task.data_creazione)}
-                        </div>
-                        <div>
-                          <span className="font-medium">Stato:</span> {task.stato}
-                        </div>
-                      </div>
+                isMobile ? (
+                  <MobileTaskCard
+                    key={task.id}
+                    task={task}
+                    onComplete={handleCompleteTask}
+                    showCompleteButton={true}
+                  >
+                    <div className="space-y-2">
+                      <TaskImages 
+                        taskId={task.id} 
+                        refresh={imageRefresh}
+                      />
+                      <ImageUpload 
+                        taskId={task.id}
+                        onImageUploaded={() => setImageRefresh(prev => prev + 1)}
+                      />
                     </div>
-                    
-                    <Button 
-                      onClick={() => handleCompleteTask(task.id)}
-                      className="ml-4"
-                    >
-                      Completa
-                    </Button>
-                  </div>
+                  </MobileTaskCard>
+                ) : (
+                  <div key={task.id} className="border rounded-lg p-4 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant={getPriorityVariant(task.priorita || '')}>
+                            {task.priorita?.toUpperCase()}
+                          </Badge>
+                          <span className="font-medium text-lg">{task.casa?.nome}</span>
+                        </div>
+                        <p className="text-gray-600 mb-3">{task.descrizione}</p>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-500 mb-3">
+                          <div>
+                            <span className="font-medium">Rilevato da:</span> {task.rilevato_da}
+                          </div>
+                          {task.operatore && (
+                            <div>
+                              <span className="font-medium">Operatore:</span> {task.operatore}
+                            </div>
+                          )}
+                          <div>
+                            <span className="font-medium">Creata il:</span> {formatDate(task.data_creazione)}
+                          </div>
+                          <div>
+                            <span className="font-medium">Stato:</span> {task.stato}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <Button 
+                        onClick={() => handleCompleteTask(task.id)}
+                        className="ml-4"
+                      >
+                        Completa
+                      </Button>
+                    </div>
 
-                  {/* Sezione Immagini */}
-                  <div className="border-t pt-4 space-y-3">
-                    <TaskImages 
-                      taskId={task.id} 
-                      refresh={imageRefresh}
-                    />
-                    <ImageUpload 
-                      taskId={task.id}
-                      onImageUploaded={() => setImageRefresh(prev => prev + 1)}
-                    />
+                    {/* Sezione Immagini */}
+                    <div className="border-t pt-4 space-y-3">
+                      <TaskImages 
+                        taskId={task.id} 
+                        refresh={imageRefresh}
+                      />
+                      <ImageUpload 
+                        taskId={task.id}
+                        onImageUploaded={() => setImageRefresh(prev => prev + 1)}
+                      />
+                    </div>
                   </div>
-                </div>
+                )
               ))}
             </div>
           ) : (

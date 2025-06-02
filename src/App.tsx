@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useIsMobile } from "@/hooks/use-mobile";
 import Layout from "./components/Layout";
 import MobileOptimizedLayout from "./components/MobileOptimizedLayout";
 import Dashboard from "./pages/Dashboard";
@@ -19,7 +20,7 @@ const queryClient = new QueryClient();
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -27,19 +28,7 @@ const App = () => {
       setIsAuthenticated(!!session);
     };
 
-    const checkMobile = () => {
-      // Enhanced mobile detection for Capacitor apps
-      const isMobileDevice = window.innerWidth < 768 || 
-                           'ontouchstart' in window || 
-                           navigator.maxTouchPoints > 0 ||
-                           /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      setIsMobile(isMobileDevice);
-    };
-
     checkAuth();
-    checkMobile();
-
-    window.addEventListener('resize', checkMobile);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -49,7 +38,6 @@ const App = () => {
 
     return () => {
       subscription.unsubscribe();
-      window.removeEventListener('resize', checkMobile);
     };
   }, []);
 

@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { ImageUpload } from "@/components/ImageUpload";
 import { TaskImages } from "@/components/TaskImages";
+import OperatorSelect from "@/components/OperatorSelect";
 import type { Tables } from "@/integrations/supabase/types";
 
 const NuovaTask = () => {
@@ -160,15 +161,10 @@ const NuovaTask = () => {
                 />
               </div>
 
-              <div>
-                <Label htmlFor="operatore">Operatore/Azienda Assegnata</Label>
-                <Input
-                  id="operatore"
-                  value={formData.operatore}
-                  onChange={(e) => handleInputChange('operatore', e.target.value)}
-                  placeholder="Nome dell'operatore o azienda (opzionale)"
-                />
-              </div>
+              <OperatorSelect
+                value={formData.operatore}
+                onChange={(value) => handleInputChange('operatore', value)}
+              />
 
               <div className="flex gap-4">
                 <Button 
