@@ -73,6 +73,7 @@ const MobileTaskCard = ({
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
+    // Formatta la data nel formato italiano con ora
     return new Date(dateString).toLocaleDateString('it-IT', {
       day: '2-digit',
       month: '2-digit',
