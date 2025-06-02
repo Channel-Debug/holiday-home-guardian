@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -24,6 +23,7 @@ const TaskCompletate = () => {
   const [selectedCasa, setSelectedCasa] = useState<string>("all");
   const [selectedPriorita, setSelectedPriorita] = useState<string>("all");
   const [editingTask, setEditingTask] = useState<CompletedTask | null>(null);
+  const [imageRefresh, setImageRefresh] = useState(0);
   const isMobile = useIsMobile();
 
   const { data: completedTasks, refetch } = useQuery({
@@ -197,6 +197,7 @@ const TaskCompletate = () => {
                 onRestore={handleRestoreTask}
                 showEditButton={true}
                 showRestoreButton={true}
+                refresh={imageRefresh}
               >
                 <TaskImages taskId={task.id} />
               </MobileTaskCard>

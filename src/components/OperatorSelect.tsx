@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,8 +21,9 @@ const OperatorSelect = ({ value, onChange, required = false }: OperatorSelectPro
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, nome, cognome, email')
-        .order('nome');
+        .select('id, nome, cognome, email, ruolo')
+        .order('nome', { ascending: true })
+        .order('cognome', { ascending: true });
       
       if (error) throw error;
       return data as Tables<"profiles">[];
@@ -65,9 +65,10 @@ const OperatorSelect = ({ value, onChange, required = false }: OperatorSelectPro
             <SelectItem value="altro">🔧 Altro (inserimento manuale)</SelectItem>
             {profiles?.map((profile) => {
               const displayName = `${profile.nome || ''} ${profile.cognome || ''}`.trim() || profile.email || 'Utente senza nome';
+              const role = profile.ruolo ? ` (${profile.ruolo})` : '';
               return (
                 <SelectItem key={profile.id} value={profile.id}>
-                  👤 {displayName}
+                  👤 {displayName}{role}
                 </SelectItem>
               );
             })}

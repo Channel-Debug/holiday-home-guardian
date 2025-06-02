@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -84,10 +83,10 @@ const MobileOptimizedLayout = ({ children }: MobileOptimizedLayoutProps) => {
           <div className="flex items-center space-x-3">
             <img 
               src="https://s3-eu-west-1.amazonaws.com/house.italianway.production/organization/logos/attachments/000/918/164/original/MONHOLIDAY_PITTOGRAMMA.jpg?1669386087" 
-              alt="MonHoliday" 
+              alt="Monholiday" 
               className="w-8 h-8 rounded"
             />
-            <span className="text-lg font-semibold text-white">MonHoliday</span>
+            <span className="text-lg font-semibold text-white">Monholiday</span>
           </div>
           <Button
             variant="ghost"
@@ -95,7 +94,7 @@ const MobileOptimizedLayout = ({ children }: MobileOptimizedLayoutProps) => {
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden text-white hover:bg-white/20"
           >
-            <X className="h-5 w-5" />
+            <Menu className="h-5 w-5" />
           </Button>
         </div>
 
@@ -142,7 +141,7 @@ const MobileOptimizedLayout = ({ children }: MobileOptimizedLayoutProps) => {
       {/* Main Content */}
       <div className="flex-1 lg:ml-0 flex flex-col overflow-hidden">
         {/* Enhanced Mobile Header */}
-        <div className="lg:hidden flex items-center justify-between h-16 px-4 bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg">
+        <div className="flex items-center justify-between h-16 px-4 bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg">
           <Button
             variant="ghost"
             size="sm"
@@ -154,10 +153,10 @@ const MobileOptimizedLayout = ({ children }: MobileOptimizedLayoutProps) => {
           <div className="flex items-center space-x-2">
             <img 
               src="https://s3-eu-west-1.amazonaws.com/house.italianway.production/organization/logos/attachments/000/918/164/original/MONHOLIDAY_PITTOGRAMMA.jpg?1669386087" 
-              alt="MonHoliday" 
+              alt="Monholiday" 
               className="w-7 h-7 rounded"
             />
-            <span className="font-semibold text-white text-lg">MonHoliday</span>
+            <span className="font-semibold text-white text-lg">Monholiday</span>
           </div>
           <div className="w-12"></div>
         </div>

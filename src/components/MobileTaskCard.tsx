@@ -1,4 +1,4 @@
-
+import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,6 +18,7 @@ interface MobileTaskCardProps {
   showEditButton?: boolean;
   showRestoreButton?: boolean;
   children?: React.ReactNode;
+  refresh?: number;
 }
 
 const MobileTaskCard = ({ 
@@ -28,7 +29,8 @@ const MobileTaskCard = ({
   showCompleteButton = false,
   showEditButton = false,
   showRestoreButton = false,
-  children 
+  children,
+  refresh
 }: MobileTaskCardProps) => {
   const getPriorityVariant = (priority: string): "default" | "destructive" | "secondary" | "outline" => {
     switch (priority?.toLowerCase()) {
@@ -43,16 +45,29 @@ const MobileTaskCard = ({
     }
   };
 
-  const getPriorityColor = (priority: string) => {
+  const getPriorityColor = (priority: string): string => {
     switch (priority?.toLowerCase()) {
       case 'alta':
-        return 'bg-red-50 border-red-200';
+        return 'bg-red-100 border-red-500';
       case 'media':
-        return 'bg-yellow-50 border-yellow-200';
+        return 'bg-yellow-100 border-yellow-500';
       case 'bassa':
-        return 'bg-green-50 border-green-200';
+        return 'bg-green-100 border-green-500';
       default:
-        return 'bg-gray-50 border-gray-200';
+        return 'bg-gray-100 border-gray-500';
+    }
+  };
+
+  const getPriorityTextColor = (priority: string): string => {
+    switch (priority?.toLowerCase()) {
+      case 'alta':
+        return 'text-red-700';
+      case 'media':
+        return 'text-yellow-700';
+      case 'bassa':
+        return 'text-green-700';
+      default:
+        return 'text-gray-700';
     }
   };
 
@@ -61,7 +76,9 @@ const MobileTaskCard = ({
     return new Date(dateString).toLocaleDateString('it-IT', {
       day: '2-digit',
       month: '2-digit',
-      year: 'numeric'
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
     });
   };
 
@@ -71,7 +88,7 @@ const MobileTaskCard = ({
         {/* Header con priorità e casa */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Badge variant={getPriorityVariant(task.priorita || '')} className="text-xs">
+            <Badge variant={getPriorityVariant(task.priorita || '')} className={`${getPriorityColor(task.priorita || '')} ${getPriorityTextColor(task.priorita || '')} text-xs font-medium`}>
               {task.priorita?.toUpperCase()}
             </Badge>
           </div>
@@ -89,11 +106,16 @@ const MobileTaskCard = ({
         <div className="space-y-1 text-xs text-gray-500 mb-3">
           <div className="flex justify-between">
             <span>Da: {task.rilevato_da}</span>
-            <span>{formatDate(task.data_creazione)}</span>
+            <span>Creata: {formatDate(task.data_creazione)}</span>
           </div>
           {task.operatore && (
             <div className="truncate">
               <span className="font-medium">Op:</span> {task.operatore}
+            </div>
+          )}
+          {task.data_completamento && (
+            <div className="text-green-600">
+              <span className="font-medium">Completata:</span> {formatDate(task.data_completamento)}
             </div>
           )}
           {task.costo_manutenzione && (
@@ -106,7 +128,7 @@ const MobileTaskCard = ({
         {/* Immagini se presenti */}
         {children && (
           <div className="mb-3">
-            {children}
+            {React.cloneElement(children as React.ReactElement, { refresh })}
           </div>
         )}
 

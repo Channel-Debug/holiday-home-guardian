@@ -5,13 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CheckCircle2, Home, AlertTriangle, Clock, Filter } from "lucide-react";
+import { CheckCircle2, Home, AlertTriangle, Clock, Filter, Edit } from "lucide-react";
 import { toast } from "sonner";
 import { ImageUpload } from "@/components/ImageUpload";
 import { TaskImages } from "@/components/TaskImages";
 import { useIsMobile } from "@/hooks/use-mobile";
 import MobileTaskCard from "@/components/MobileTaskCard";
 import type { Tables } from "@/integrations/supabase/types";
+import TaskEditModal from "@/components/TaskEditModal";
 
 type Task = Tables<"task"> & {
   casa: Tables<"casa"> | null;
@@ -23,6 +24,7 @@ const Dashboard = () => {
   const [selectedPriorita, setSelectedPriorita] = useState<string>("all");
   const [imageRefresh, setImageRefresh] = useState(0);
   const isMobile = useIsMobile();
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   useEffect(() => {
     const getUser = async () => {
@@ -262,19 +264,13 @@ const Dashboard = () => {
                   <MobileTaskCard
                     key={task.id}
                     task={task}
+                    onEdit={setEditingTask}
                     onComplete={handleCompleteTask}
+                    showEditButton={true}
                     showCompleteButton={true}
+                    refresh={imageRefresh}
                   >
-                    <div className="space-y-2">
-                      <TaskImages 
-                        taskId={task.id} 
-                        refresh={imageRefresh}
-                      />
-                      <ImageUpload 
-                        taskId={task.id}
-                        onImageUploaded={() => setImageRefresh(prev => prev + 1)}
-                      />
-                    </div>
+                    <TaskImages taskId={task.id} />
                   </MobileTaskCard>
                 ) : (
                   <div key={task.id} className="border rounded-lg p-4 space-y-4">
@@ -306,12 +302,21 @@ const Dashboard = () => {
                         </div>
                       </div>
                       
-                      <Button 
-                        onClick={() => handleCompleteTask(task.id)}
-                        className="ml-4"
-                      >
-                        Completa
-                      </Button>
+                      <div className="flex gap-2 ml-4">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setEditingTask(task)}
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          Modifica
+                        </Button>
+                        <Button 
+                          onClick={() => handleCompleteTask(task.id)}
+                        >
+                          Completa
+                        </Button>
+                      </div>
                     </div>
 
                     {/* Sezione Immagini */}
@@ -338,6 +343,19 @@ const Dashboard = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Modal di modifica */}
+      {editingTask && (
+        <TaskEditModal
+          task={editingTask}
+          isOpen={!!editingTask}
+          onClose={() => setEditingTask(null)}
+          onUpdate={() => {
+            refetchTasks();
+            setEditingTask(null);
+          }}
+        />
+      )}
     </div>
   );
 };
