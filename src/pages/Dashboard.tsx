@@ -12,7 +12,7 @@ import TaskEditModal from "@/components/TaskEditModal";
 import { TaskImages } from "@/components/TaskImages";
 import TaskCard from "@/components/TaskCard";
 import MobileTaskCard from "@/components/MobileTaskCard";
-import { useMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Task = Tables<"task"> & {
@@ -23,7 +23,7 @@ type Task = Tables<"task"> & {
 const Dashboard = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [imageRefresh, setImageRefresh] = useState(0);
 
@@ -193,7 +193,7 @@ const Dashboard = () => {
           task={editingTask}
           isOpen={!!editingTask}
           onClose={() => setEditingTask(null)}
-          onSave={() => {
+          onUpdate={() => {
             setEditingTask(null);
             queryClient.invalidateQueries({ queryKey: ['tasks'] });
           }}

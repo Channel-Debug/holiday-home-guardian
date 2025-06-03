@@ -1,29 +1,31 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { CheckCircle } from "lucide-react";
+import { RotateCcw, Download } from "lucide-react";
+import TaskEditModal from "@/components/TaskEditModal";
 import { TaskImages } from "@/components/TaskImages";
 import TaskCard from "@/components/TaskCard";
 import MobileTaskCard from "@/components/MobileTaskCard";
-import { useMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { Tables } from "@/integrations/supabase/types";
 
-type CompletedTask = Tables<"task"> & {
+type Task = Tables<"task"> & {
   casa: Tables<"casa"> | null;
   mezzi: Tables<"mezzi"> | null;
 };
 
 const TaskCompletate = () => {
   const queryClient = useQueryClient();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [imageRefresh, setImageRefresh] = useState(0);
 
-  const { data: completedTasks, isLoading } = useQuery({
-    queryKey: ['completed-tasks'],
+  const { data: tasks, isLoading } = useQuery({
+    queryKey: ['completedTasks'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('task')
@@ -36,7 +38,7 @@ const TaskCompletate = () => {
         .order('data_completamento', { ascending: false });
       
       if (error) throw error;
-      return data as CompletedTask[];
+      return data as Task[];
     },
   });
 
@@ -44,63 +46,48 @@ const TaskCompletate = () => {
     try {
       const { error } = await supabase
         .from('task')
-        .update({ 
-          stato: 'da_fare',
-          data_completamento: null
-        })
+        .update({ stato: 'da_fare', data_completamento: null })
         .eq('id', taskId);
 
       if (error) throw error;
 
       toast.success("Task ripristinata con successo!");
-      queryClient.invalidateQueries({ queryKey: ['completed-tasks'] });
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['completedTasks'] });
     } catch (error) {
       console.error('Errore nel ripristinare la task:', error);
       toast.error("Errore nel ripristinare la task");
     }
   };
 
-  const totalCost = completedTasks?.reduce((sum, task) => {
-    return sum + (task.costo_manutenzione || 0);
-  }, 0) || 0;
+  const handleEditTask = (task: Task) => {
+    setEditingTask(task);
+  };
+
+  const completedTasks = tasks?.filter(task => task.stato === 'completata') || [];
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Task Completate</h1>
-        <Badge variant="outline" className="text-lg px-3 py-1">
-          <CheckCircle className="h-4 w-4 mr-2" />
-          {completedTasks?.length || 0} completate
-        </Badge>
+        <Button variant="outline">
+          <Download className="h-4 w-4 mr-2" />
+          Esporta Report
+        </Button>
       </div>
 
-      {/* Summary Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Riepilogo Costi</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-green-600">
-            €{totalCost.toFixed(2)} (IVA inclusa)
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Totale speso per {completedTasks?.length || 0} task completate
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Completed Tasks List */}
+      {/* Tasks List */}
       <div className="space-y-4">
-        <h2 className="text-2xl font-semibold">Cronologia Completamenti</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-semibold">Task Completate</h2>
+          <Badge variant="secondary">{completedTasks.length} tasks</Badge>
+        </div>
 
         {isLoading ? (
-          <div className="text-center py-8">Caricamento task completate...</div>
-        ) : !completedTasks || completedTasks.length === 0 ? (
+          <div className="text-center py-8">Caricamento tasks completate...</div>
+        ) : completedTasks.length === 0 ? (
           <Card>
             <CardContent className="text-center py-8">
-              <CheckCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">Nessuna task completata ancora</p>
+              <p className="text-muted-foreground mb-4">Nessuna task completata</p>
             </CardContent>
           </Card>
         ) : (
@@ -111,7 +98,9 @@ const TaskCompletate = () => {
                   key={task.id}
                   task={task}
                   onRestore={handleRestoreTask}
+                  onEdit={handleEditTask}
                   showRestoreButton={true}
+                  showEditButton={true}
                   showImageUpload={true}
                   onImageUploaded={() => setImageRefresh(prev => prev + 1)}
                   refresh={imageRefresh}
@@ -123,7 +112,9 @@ const TaskCompletate = () => {
                   key={task.id}
                   task={task}
                   onRestore={handleRestoreTask}
+                  onEdit={handleEditTask}
                   showRestoreButton={true}
+                  showEditButton={true}
                   showImageUpload={true}
                   onImageUploaded={() => setImageRefresh(prev => prev + 1)}
                   refresh={imageRefresh}
@@ -135,6 +126,19 @@ const TaskCompletate = () => {
           </div>
         )}
       </div>
+
+      {/* Edit Task Modal */}
+      {editingTask && (
+        <TaskEditModal
+          task={editingTask}
+          isOpen={!!editingTask}
+          onClose={() => setEditingTask(null)}
+          onUpdate={() => {
+            setEditingTask(null);
+            queryClient.invalidateQueries({ queryKey: ['completedTasks'] });
+          }}
+        />
+      )}
     </div>
   );
 };
