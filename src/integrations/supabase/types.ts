@@ -30,6 +30,30 @@ export type Database = {
         }
         Relationships: []
       }
+      mezzi: {
+        Row: {
+          created_at: string
+          id: string
+          nome: string
+          note: string | null
+          tipo: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nome: string
+          note?: string | null
+          tipo?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nome?: string
+          note?: string | null
+          tipo?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -65,10 +89,12 @@ export type Database = {
           data_creazione: string | null
           descrizione: string | null
           id: string
+          mezzo_id: string | null
           operatore: string | null
           priorita: string | null
           rilevato_da: string | null
           stato: string | null
+          tipo_manutenzione: string | null
         }
         Insert: {
           casa_id?: string | null
@@ -77,10 +103,12 @@ export type Database = {
           data_creazione?: string | null
           descrizione?: string | null
           id?: string
+          mezzo_id?: string | null
           operatore?: string | null
           priorita?: string | null
           rilevato_da?: string | null
           stato?: string | null
+          tipo_manutenzione?: string | null
         }
         Update: {
           casa_id?: string | null
@@ -89,10 +117,12 @@ export type Database = {
           data_creazione?: string | null
           descrizione?: string | null
           id?: string
+          mezzo_id?: string | null
           operatore?: string | null
           priorita?: string | null
           rilevato_da?: string | null
           stato?: string | null
+          tipo_manutenzione?: string | null
         }
         Relationships: [
           {
@@ -100,6 +130,13 @@ export type Database = {
             columns: ["casa_id"]
             isOneToOne: false
             referencedRelation: "casa"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_mezzo_id_fkey"
+            columns: ["mezzo_id"]
+            isOneToOne: false
+            referencedRelation: "mezzi"
             referencedColumns: ["id"]
           },
         ]

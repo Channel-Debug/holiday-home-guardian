@@ -2,7 +2,7 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, Edit, RotateCcw } from "lucide-react";
 import { ImageUpload } from "@/components/ImageUpload";
 import type { Tables } from "@/integrations/supabase/types";
@@ -12,7 +12,7 @@ type Task = Tables<"task"> & {
   mezzi: Tables<"mezzi"> | null;
 };
 
-interface MobileTaskCardProps {
+interface TaskCardProps {
   task: Task;
   onComplete?: (taskId: string) => void;
   onEdit?: (task: Task) => void;
@@ -26,7 +26,7 @@ interface MobileTaskCardProps {
   refresh?: number;
 }
 
-const MobileTaskCard = ({ 
+const TaskCard = ({ 
   task, 
   onComplete, 
   onEdit, 
@@ -38,7 +38,7 @@ const MobileTaskCard = ({
   onImageUploaded,
   children,
   refresh
-}: MobileTaskCardProps) => {
+}: TaskCardProps) => {
   const getPriorityVariant = (priority: string): "default" | "destructive" | "secondary" | "outline" => {
     switch (priority?.toLowerCase()) {
       case 'alta':
@@ -49,32 +49,6 @@ const MobileTaskCard = ({
         return 'default';
       default:
         return 'outline';
-    }
-  };
-
-  const getPriorityColor = (priority: string): string => {
-    switch (priority?.toLowerCase()) {
-      case 'alta':
-        return 'bg-red-100 border-red-500';
-      case 'media':
-        return 'bg-yellow-100 border-yellow-500';
-      case 'bassa':
-        return 'bg-green-100 border-green-500';
-      default:
-        return 'bg-gray-100 border-gray-500';
-    }
-  };
-
-  const getPriorityTextColor = (priority: string): string => {
-    switch (priority?.toLowerCase()) {
-      case 'alta':
-        return 'text-red-700';
-      case 'media':
-        return 'text-yellow-700';
-      case 'bassa':
-        return 'text-green-700';
-      default:
-        return 'text-gray-700';
     }
   };
 
@@ -107,58 +81,57 @@ const MobileTaskCard = ({
   const locationInfo = getLocationInfo();
 
   return (
-    <Card className={`${getPriorityColor(task.priorita || '')} border-l-4`}>
-      <CardContent className="p-4">
-        {/* Header con priorità e location */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Badge variant={getPriorityVariant(task.priorita || '')} className={`${getPriorityColor(task.priorita || '')} ${getPriorityTextColor(task.priorita || '')} text-xs font-medium`}>
-              {task.priorita?.toUpperCase()}
-            </Badge>
-          </div>
-          <div className="text-right flex-1 ml-2">
-            <div className="text-sm font-semibold text-gray-700">
-              {locationInfo.name}
-            </div>
+    <Card className="h-full">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg">
+            {locationInfo.name}
             {locationInfo.address && (
-              <div className="text-xs text-gray-500 break-words">
+              <span className="block text-sm text-gray-500 font-normal mt-1">
                 {locationInfo.address}
-              </div>
+              </span>
             )}
-          </div>
+          </CardTitle>
+          <Badge variant={getPriorityVariant(task.priorita || '')}>
+            {task.priorita?.toUpperCase()}
+          </Badge>
         </div>
-
-        {/* Descrizione */}
-        <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-          {task.descrizione}
-        </p>
-
-        {/* Info compatte su singola riga */}
-        <div className="space-y-1 text-xs text-gray-500 mb-3">
-          <div className="flex justify-between">
-            <span>Da: {task.rilevato_da}</span>
-            <span>Creata: {formatDate(task.data_creazione)}</span>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <p className="text-gray-600">{task.descrizione}</p>
+        
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <span className="font-medium text-gray-500">Rilevato da:</span>
+            <p>{task.rilevato_da}</p>
           </div>
           {task.operatore && (
-            <div className="truncate">
-              <span className="font-medium">Op:</span> {task.operatore}
+            <div>
+              <span className="font-medium text-gray-500">Operatore:</span>
+              <p>{task.operatore}</p>
             </div>
           )}
+          <div>
+            <span className="font-medium text-gray-500">Data creazione:</span>
+            <p>{formatDate(task.data_creazione)}</p>
+          </div>
           {task.data_completamento && (
-            <div className="text-green-600">
-              <span className="font-medium">Completata:</span> {formatDate(task.data_completamento)}
+            <div>
+              <span className="font-medium text-gray-500">Data completamento:</span>
+              <p className="text-green-600">{formatDate(task.data_completamento)}</p>
             </div>
           )}
           {task.costo_manutenzione && (
-            <div className="text-green-600 font-medium">
-              €{task.costo_manutenzione} (IVA inclusa)
+            <div className="col-span-2">
+              <span className="font-medium text-gray-500">Costo:</span>
+              <p className="text-green-600 font-semibold">€{task.costo_manutenzione} (IVA inclusa)</p>
             </div>
           )}
         </div>
 
         {/* Upload immagini se abilitato */}
         {showImageUpload && onImageUploaded && (
-          <div className="mb-3">
+          <div className="pt-2">
             <ImageUpload 
               taskId={task.id}
               onImageUploaded={onImageUploaded}
@@ -168,41 +141,39 @@ const MobileTaskCard = ({
 
         {/* Immagini se presenti */}
         {children && (
-          <div className="mb-3">
+          <div className="pt-2">
             {React.cloneElement(children as React.ReactElement, { refresh })}
           </div>
         )}
 
-        {/* Bottoni azione */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 pt-2">
           {showCompleteButton && onComplete && (
             <Button 
               onClick={() => onComplete(task.id)}
-              size="sm"
-              className="flex-1 h-8"
+              className="flex-1"
             >
-              <CheckCircle2 className="h-3 w-3 mr-1" />
-              Completa
+              <CheckCircle2 className="h-4 w-4 mr-2" />
+              Completa Task
             </Button>
           )}
           {showEditButton && onEdit && (
             <Button 
               onClick={() => onEdit(task)}
               variant="outline"
-              size="sm"
-              className="h-8"
+              className="flex-1"
             >
-              <Edit className="h-3 w-3" />
+              <Edit className="h-4 w-4 mr-2" />
+              Modifica
             </Button>
           )}
           {showRestoreButton && onRestore && (
             <Button
               variant="outline"
-              size="sm"
               onClick={() => onRestore(task.id)}
-              className="h-8"
+              className="flex-1"
             >
-              <RotateCcw className="h-3 w-3" />
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Ripristina
             </Button>
           )}
         </div>
@@ -211,4 +182,4 @@ const MobileTaskCard = ({
   );
 };
 
-export default MobileTaskCard;
+export default TaskCard;

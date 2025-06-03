@@ -1,298 +1,201 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Filter, CheckCircle2, Edit } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useIsMobile } from "@/hooks/use-mobile";
-import MobileTaskCard from "@/components/MobileTaskCard";
-import TaskEditModal from "@/components/TaskEditModal";
+import { Plus, CheckCircle, Calendar, AlertTriangle } from "lucide-react";
+import { TaskEditModal } from "@/components/TaskEditModal";
 import { TaskImages } from "@/components/TaskImages";
+import TaskCard from "@/components/TaskCard";
+import MobileTaskCard from "@/components/MobileTaskCard";
+import { useMobile } from "@/hooks/use-mobile";
 import type { Tables } from "@/integrations/supabase/types";
 
-type PendingTask = Tables<"task"> & {
+type Task = Tables<"task"> & {
   casa: Tables<"casa"> | null;
+  mezzi: Tables<"mezzi"> | null;
 };
 
 const Dashboard = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCasa, setSelectedCasa] = useState<string>("all");
-  const [selectedPriorita, setSelectedPriorita] = useState<string>("all");
-  const [editingTask, setEditingTask] = useState<PendingTask | null>(null);
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const isMobile = useMobile();
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [imageRefresh, setImageRefresh] = useState(0);
-  const isMobile = useIsMobile();
 
-  const { data: pendingTasks, refetch } = useQuery({
-    queryKey: ['pending-tasks', searchTerm, selectedCasa, selectedPriorita],
+  const { data: tasks, isLoading } = useQuery({
+    queryKey: ['tasks'],
     queryFn: async () => {
-      let query = supabase
+      const { data, error } = await supabase
         .from('task')
         .select(`
           *,
-          casa (*)
+          casa:casa_id(id, nome, indirizzo),
+          mezzi:mezzo_id(id, nome, tipo)
         `)
         .eq('stato', 'da_fare')
         .order('data_creazione', { ascending: false });
-
-      if (selectedCasa !== "all") {
-        query = query.eq('casa_id', selectedCasa);
-      }
-
-      if (selectedPriorita !== "all") {
-        query = query.eq('priorita', selectedPriorita);
-      }
-
-      if (searchTerm) {
-        query = query.ilike('descrizione', `%${searchTerm}%`);
-      }
-      
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as PendingTask[];
-    },
-  });
-
-  const { data: houses } = useQuery({
-    queryKey: ['houses'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('casa')
-        .select('*')
-        .order('nome');
       
       if (error) throw error;
-      return data as Tables<"casa">[];
+      return data as Task[];
     },
   });
 
   const handleCompleteTask = async (taskId: string) => {
     try {
-      const { data: userData } = await supabase.auth.getUser();
-
-      const { error: updateError } = await supabase
+      const { error } = await supabase
         .from('task')
-        .update({
+        .update({ 
           stato: 'completata',
-          data_completamento: new Date().toISOString(),
+          data_completamento: new Date().toISOString()
         })
         .eq('id', taskId);
 
-      if (updateError) throw updateError;
+      if (error) throw error;
 
-      const { error: logError } = await supabase
-        .from('task_logs')
-        .insert({
-          task_id: taskId,
-          azione: 'completata',
-          utente_id: userData.user?.id,
-        });
-
-      if (logError) throw logError;
-
-      toast.success('Task completata con successo!');
-      refetch();
+      toast.success("Task completata con successo!");
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
     } catch (error) {
       console.error('Errore nel completare la task:', error);
-      toast.error('Errore nel completare la task');
+      toast.error("Errore nel completare la task");
     }
   };
 
-  const getPriorityVariant = (priority: string): "default" | "destructive" | "secondary" | "outline" => {
-    switch (priority?.toLowerCase()) {
-      case 'alta':
-        return 'destructive';
-      case 'media':
-        return 'secondary';
-      case 'bassa':
-        return 'default';
-      default:
-        return 'outline';
-    }
+  const handleEditTask = (task: Task) => {
+    setEditingTask(task);
   };
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('it-IT', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const filteredTasks = pendingTasks?.filter(task =>
-    task.descrizione?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    task.casa?.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    task.operatore?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const pendingTasks = tasks?.filter(task => task.stato === 'da_fare') || [];
+  const highPriorityTasks = pendingTasks.filter(task => task.priorita === 'alta');
 
   return (
-    <div className={`${isMobile ? 'p-4' : 'p-6'} space-y-6`}>
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold text-gray-900`}>Task da Completare</h1>
-        <p className="text-gray-600">
-          {filteredTasks?.length || 0} task in sospeso
-        </p>
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <Button onClick={() => navigate('/nuova-task')}>
+          <Plus className="h-4 w-4 mr-2" />
+          Nuova Task
+        </Button>
       </div>
 
-      {/* Ricerca e Filtri */}
-      <Card>
-        <CardContent className="pt-6 space-y-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Cerca nelle task da completare..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          
-          <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'} gap-4`}>
-            <div>
-              <label className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium mb-2 block`}>Filtra per Casa</label>
-              <Select value={selectedCasa} onValueChange={setSelectedCasa}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Tutte le case" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tutte le case</SelectItem>
-                  {houses?.map((casa) => (
-                    <SelectItem key={casa.id} value={casa.id}>
-                      {casa.nome}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+      {/* Statistics Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Task Pendenti</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{pendingTasks.length}</div>
+          </CardContent>
+        </Card>
 
-            <div>
-              <label className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium mb-2 block`}>Filtra per Priorità</label>
-              <Select value={selectedPriorita} onValueChange={setSelectedPriorita}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Tutte le priorità" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tutte le priorità</SelectItem>
-                  <SelectItem value="alta">🔴 Alta</SelectItem>
-                  <SelectItem value="media">🟡 Media</SelectItem>
-                  <SelectItem value="bassa">🟢 Bassa</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Alta Priorità</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-red-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600">{highPriorityTasks.length}</div>
+          </CardContent>
+        </Card>
 
-      {/* Task da Completare */}
-      <div className={`space-y-${isMobile ? '4' : '6'}`}>
-        {pendingTasks && pendingTasks.length > 0 ? (
-          pendingTasks.map((task) => (
-            isMobile ? (
-              <MobileTaskCard
-                key={task.id}
-                task={task}
-                onComplete={handleCompleteTask}
-                onEdit={setEditingTask}
-                showCompleteButton={true}
-                showEditButton={true}
-                showImageUpload={true}
-                onImageUploaded={() => setImageRefresh(prev => prev + 1)}
-                refresh={imageRefresh}
-              >
-                <TaskImages taskId={task.id} />
-              </MobileTaskCard>
-            ) : (
-              <Card key={task.id}>
-                <CardContent className="pt-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge variant={getPriorityVariant(task.priorita || '')}>
-                          {task.priorita?.toUpperCase()}
-                        </Badge>
-                        <div>
-                          <span className="font-semibold text-lg">{task.casa?.nome}</span>
-                          {task.casa?.indirizzo && (
-                            <div className="text-sm text-gray-500">
-                              {task.casa.indirizzo}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <p className="text-gray-700 mb-3">{task.descrizione}</p>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
-                        <div>
-                          <span className="font-medium">Rilevato da:</span> {task.rilevato_da}
-                        </div>
-                        {task.operatore && (
-                          <div>
-                            <span className="font-medium">Operatore:</span> {task.operatore}
-                          </div>
-                        )}
-                        <div>
-                          <span className="font-medium">Creata il:</span> {formatDate(task.data_creazione)}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex gap-2 ml-4">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setEditingTask(task)}
-                      >
-                        <Edit className="h-4 w-4 mr-2" />
-                        Modifica
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleCompleteTask(task.id)}
-                      >
-                        <CheckCircle2 className="h-4 w-4 mr-2" />
-                        Completa
-                      </Button>
-                    </div>
-                  </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Task Completate</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">-</div>
+            <p className="text-xs text-muted-foreground">Vai a Task Completate</p>
+          </CardContent>
+        </Card>
 
-                  {/* Sezione Immagini */}
-                  <div className="border-t pt-4">
-                    <TaskImages taskId={task.id} />
-                  </div>
-                </CardContent>
-              </Card>
-            )
-          ))
-        ) : (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Totale Task</CardTitle>
+            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{pendingTasks.length}</div>
+            <p className="text-xs text-muted-foreground">Task attive</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Tasks List */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-semibold">Task da Completare</h2>
+          {highPriorityTasks.length > 0 && (
+            <Badge variant="destructive">
+              {highPriorityTasks.length} alta priorità
+            </Badge>
+          )}
+        </div>
+
+        {isLoading ? (
+          <div className="text-center py-8">Caricamento tasks...</div>
+        ) : pendingTasks.length === 0 ? (
           <Card>
-            <CardContent className="pt-6">
-              <p className="text-center text-gray-500 py-8">
-                {searchTerm || selectedCasa !== "all" || selectedPriorita !== "all" 
-                  ? 'Nessuna task trovata con i criteri di ricerca' 
-                  : 'Nessuna task da completare'}
-              </p>
+            <CardContent className="text-center py-8">
+              <p className="text-muted-foreground mb-4">Nessuna task da completare</p>
+              <Button onClick={() => navigate('/nuova-task')}>
+                <Plus className="h-4 w-4 mr-2" />
+                Crea la prima task
+              </Button>
             </CardContent>
           </Card>
+        ) : (
+          <div className={isMobile ? "space-y-4" : "grid gap-6 md:grid-cols-2 lg:grid-cols-3"}>
+            {pendingTasks.map((task) => (
+              isMobile ? (
+                <MobileTaskCard
+                  key={task.id}
+                  task={task}
+                  onComplete={handleCompleteTask}
+                  onEdit={handleEditTask}
+                  showCompleteButton={true}
+                  showEditButton={true}
+                  showImageUpload={true}
+                  onImageUploaded={() => setImageRefresh(prev => prev + 1)}
+                  refresh={imageRefresh}
+                >
+                  <TaskImages taskId={task.id} />
+                </MobileTaskCard>
+              ) : (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  onComplete={handleCompleteTask}
+                  onEdit={handleEditTask}
+                  showCompleteButton={true}
+                  showEditButton={true}
+                  showImageUpload={true}
+                  onImageUploaded={() => setImageRefresh(prev => prev + 1)}
+                  refresh={imageRefresh}
+                >
+                  <TaskImages taskId={task.id} />
+                </TaskCard>
+              )
+            ))}
+          </div>
         )}
       </div>
 
-      {/* Modal di modifica */}
+      {/* Edit Task Modal */}
       {editingTask && (
         <TaskEditModal
           task={editingTask}
           isOpen={!!editingTask}
           onClose={() => setEditingTask(null)}
-          onUpdate={() => {
-            refetch();
+          onSave={() => {
             setEditingTask(null);
+            queryClient.invalidateQueries({ queryKey: ['tasks'] });
           }}
         />
       )}

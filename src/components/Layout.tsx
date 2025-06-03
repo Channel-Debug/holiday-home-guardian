@@ -95,7 +95,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             onClick={handleLogout}
             variant="outline"
             size="sm"
-            className={`${isSidebarCollapsed ? 'w-8 h-8 p-0 text-xs' : 'w-full text-sm h-9'}`}
+            className={`${isSidebarCollapsed ? 'w-8 h-8 p-0 text-xs' : 'w-full text-xs h-8'}`}
             title={isSidebarCollapsed ? 'Logout' : ''}
           >
             {isSidebarCollapsed ? '🚪' : 'Logout'}

@@ -97,35 +97,9 @@ const MobileOptimizedLayout = ({ children }: { children: React.ReactNode }) => {
       </header>
 
       {/* Main content */}
-      <main>
+      <main className="pb-4">
         {children}
       </main>
-
-      {/* Bottom navigation mobile */}
-      <nav className="bg-white border-t px-4 py-2 fixed bottom-0 left-0 right-0 z-50">
-        <div className="flex justify-around items-center">
-          {navigation.slice(0, 4).map((item) => {
-            const isActive = location.pathname === item.href;
-            return (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={`flex flex-col items-center py-2 px-1 text-xs transition-colors ${
-                  isActive
-                    ? "text-blue-600"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                <item.icon className="h-5 w-5 mb-1" />
-                <span className="truncate max-w-12">{item.name.split(' ')[0]}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
-
-      {/* Spacer for bottom navigation */}
-      <div className="h-16"></div>
     </div>
   );
 };

@@ -8,21 +8,26 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { ImageUpload } from "@/components/ImageUpload";
 import { TaskImages } from "@/components/TaskImages";
 import OperatorSelect from "@/components/OperatorSelect";
+import CostInput from "@/components/CostInput";
 import type { Tables } from "@/integrations/supabase/types";
 
 const NuovaTask = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
+    tipo_manutenzione: "casa",
     casa_id: "",
+    mezzo_id: "",
     descrizione: "",
     priorita: "",
     rilevato_da: "",
     operatore: "",
+    costo_manutenzione: null as number | null,
   });
   const [loading, setLoading] = useState(false);
   const [createdTaskId, setCreatedTaskId] = useState<string | null>(null);
@@ -41,19 +46,39 @@ const NuovaTask = () => {
     },
   });
 
+  const { data: mezzi } = useQuery({
+    queryKey: ['mezzi'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('mezzi')
+        .select('*')
+        .order('nome');
+      
+      if (error) throw error;
+      return data as Tables<"mezzi">[];
+    },
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const { data: user } = await supabase.auth.getUser();
-      
+      const taskData = {
+        tipo_manutenzione: formData.tipo_manutenzione,
+        casa_id: formData.tipo_manutenzione === 'casa' ? formData.casa_id : null,
+        mezzo_id: formData.tipo_manutenzione === 'mezzo' ? formData.mezzo_id : null,
+        descrizione: formData.descrizione,
+        priorita: formData.priorita,
+        rilevato_da: formData.rilevato_da,
+        operatore: formData.operatore,
+        costo_manutenzione: formData.costo_manutenzione,
+        stato: 'da_fare',
+      };
+
       const { data, error } = await supabase
         .from('task')
-        .insert({
-          ...formData,
-          stato: 'da_fare',
-        })
+        .insert(taskData)
         .select()
         .single();
 
@@ -64,11 +89,14 @@ const NuovaTask = () => {
       
       // Reset form
       setFormData({
+        tipo_manutenzione: "casa",
         casa_id: "",
+        mezzo_id: "",
         descrizione: "",
         priorita: "",
         rilevato_da: "",
         operatore: "",
+        costo_manutenzione: null,
       });
     } catch (error) {
       console.error('Errore nella creazione della task:', error);
@@ -78,7 +106,7 @@ const NuovaTask = () => {
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | number | null) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -101,24 +129,66 @@ const NuovaTask = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <Label htmlFor="casa">Casa *</Label>
-                <Select 
-                  value={formData.casa_id} 
-                  onValueChange={(value) => handleInputChange('casa_id', value)}
-                  required
+                <Label>Tipo Manutenzione *</Label>
+                <RadioGroup 
+                  value={formData.tipo_manutenzione} 
+                  onValueChange={(value) => handleInputChange('tipo_manutenzione', value)}
+                  className="flex gap-6 mt-2"
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleziona una casa" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {houses?.map((casa) => (
-                      <SelectItem key={casa.id} value={casa.id}>
-                        {casa.nome}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="casa" id="casa" />
+                    <Label htmlFor="casa">Casa</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="mezzo" id="mezzo" />
+                    <Label htmlFor="mezzo">Mezzo</Label>
+                  </div>
+                </RadioGroup>
               </div>
+
+              {formData.tipo_manutenzione === 'casa' && (
+                <div>
+                  <Label htmlFor="casa">Casa *</Label>
+                  <Select 
+                    value={formData.casa_id} 
+                    onValueChange={(value) => handleInputChange('casa_id', value)}
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleziona una casa" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {houses?.map((casa) => (
+                        <SelectItem key={casa.id} value={casa.id}>
+                          {casa.nome} {casa.indirizzo && `- ${casa.indirizzo}`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {formData.tipo_manutenzione === 'mezzo' && (
+                <div>
+                  <Label htmlFor="mezzo">Mezzo *</Label>
+                  <Select 
+                    value={formData.mezzo_id} 
+                    onValueChange={(value) => handleInputChange('mezzo_id', value)}
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleziona un mezzo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {mezzi?.map((mezzo) => (
+                        <SelectItem key={mezzo.id} value={mezzo.id}>
+                          {mezzo.nome} {mezzo.tipo && `- ${mezzo.tipo}`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               <div>
                 <Label htmlFor="descrizione">Descrizione Intervento *</Label>
@@ -164,6 +234,11 @@ const NuovaTask = () => {
               <OperatorSelect
                 value={formData.operatore}
                 onChange={(value) => handleInputChange('operatore', value)}
+              />
+
+              <CostInput
+                value={formData.costo_manutenzione}
+                onChange={(value) => handleInputChange('costo_manutenzione', value)}
               />
 
               <div className="flex gap-4">
