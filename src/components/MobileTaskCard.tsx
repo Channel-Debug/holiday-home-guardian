@@ -1,8 +1,10 @@
+
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle2, Edit, RotateCcw } from "lucide-react";
+import { ImageUpload } from "@/components/ImageUpload";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Task = Tables<"task"> & {
@@ -17,6 +19,8 @@ interface MobileTaskCardProps {
   showCompleteButton?: boolean;
   showEditButton?: boolean;
   showRestoreButton?: boolean;
+  showImageUpload?: boolean;
+  onImageUploaded?: () => void;
   children?: React.ReactNode;
   refresh?: number;
 }
@@ -29,6 +33,8 @@ const MobileTaskCard = ({
   showCompleteButton = false,
   showEditButton = false,
   showRestoreButton = false,
+  showImageUpload = false,
+  onImageUploaded,
   children,
   refresh
 }: MobileTaskCardProps) => {
@@ -93,9 +99,16 @@ const MobileTaskCard = ({
               {task.priorita?.toUpperCase()}
             </Badge>
           </div>
-          <span className="text-sm font-semibold text-gray-700 truncate max-w-[120px]">
-            {task.casa?.nome}
-          </span>
+          <div className="text-right">
+            <div className="text-sm font-semibold text-gray-700 truncate max-w-[120px]">
+              {task.casa?.nome}
+            </div>
+            {task.casa?.indirizzo && (
+              <div className="text-xs text-gray-500 truncate max-w-[120px]">
+                {task.casa.indirizzo}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Descrizione */}
@@ -125,6 +138,16 @@ const MobileTaskCard = ({
             </div>
           )}
         </div>
+
+        {/* Upload immagini se abilitato */}
+        {showImageUpload && onImageUploaded && (
+          <div className="mb-3">
+            <ImageUpload 
+              taskId={task.id}
+              onImageUploaded={onImageUploaded}
+            />
+          </div>
+        )}
 
         {/* Immagini se presenti */}
         {children && (

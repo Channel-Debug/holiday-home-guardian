@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -49,7 +50,11 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         <div className="p-4">
           <div className="flex items-center justify-between">
             {!isSidebarCollapsed && (
-              <h1 className="text-xl font-bold text-gray-800">Holiday Guardian</h1>
+              <img 
+                src="https://i.postimg.cc/7PMqjt8g/MManutenzioni.png" 
+                alt="MManutenzioni" 
+                className="h-8"
+              />
             )}
             <Button
               variant="ghost"
@@ -89,7 +94,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           <Button
             onClick={handleLogout}
             variant="outline"
-            className={`${isSidebarCollapsed ? 'w-8 h-8 p-0' : 'w-full'}`}
+            size="sm"
+            className={`${isSidebarCollapsed ? 'w-8 h-8 p-0 text-xs' : 'w-full text-sm h-9'}`}
             title={isSidebarCollapsed ? 'Logout' : ''}
           >
             {isSidebarCollapsed ? '🚪' : 'Logout'}

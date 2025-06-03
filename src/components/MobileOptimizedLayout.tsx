@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -43,7 +44,11 @@ const MobileOptimizedLayout = ({ children }: { children: React.ReactNode }) => {
     <div className="min-h-screen bg-gray-50">
       {/* Header mobile */}
       <header className="bg-white shadow-sm border-b px-4 py-3 flex items-center justify-between sticky top-0 z-50">
-        <h1 className="text-lg font-semibold text-gray-800">Holiday Guardian</h1>
+        <img 
+          src="https://i.postimg.cc/bJ0jcrMz/MManutenzioni.png" 
+          alt="MManutenzioni" 
+          className="h-8"
+        />
         
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>

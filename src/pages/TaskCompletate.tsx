@@ -210,7 +210,14 @@ const TaskCompletate = () => {
                         <Badge variant={getPriorityVariant(task.priorita || '')}>
                           {task.priorita?.toUpperCase()}
                         </Badge>
-                        <span className="font-semibold text-lg">{task.casa?.nome}</span>
+                        <div>
+                          <span className="font-semibold text-lg">{task.casa?.nome}</span>
+                          {task.casa?.indirizzo && (
+                            <div className="text-sm text-gray-500">
+                              {task.casa.indirizzo}
+                            </div>
+                          )}
+                        </div>
                       </div>
                       
                       <p className="text-gray-700 mb-3">{task.descrizione}</p>
