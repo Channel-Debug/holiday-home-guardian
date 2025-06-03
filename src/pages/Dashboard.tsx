@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Plus, CheckCircle, Calendar, AlertTriangle } from "lucide-react";
-import { TaskEditModal } from "@/components/TaskEditModal";
+import TaskEditModal from "@/components/TaskEditModal";
 import { TaskImages } from "@/components/TaskImages";
 import TaskCard from "@/components/TaskCard";
 import MobileTaskCard from "@/components/MobileTaskCard";
