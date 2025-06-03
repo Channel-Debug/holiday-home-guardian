@@ -42,25 +42,27 @@ const MobileOptimizedLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header mobile */}
-      <header className="bg-white shadow-sm border-b px-4 py-3 flex items-center justify-between sticky top-0 z-50">
+      {/* Header mobile ottimizzato */}
+      <header className="bg-white shadow-sm border-b px-3 py-2 flex items-center justify-between sticky top-0 z-50">
         <img 
           src="https://i.postimg.cc/bJ0jcrMz/MManutenzioni.png" 
           alt="MManutenzioni" 
-          className="h-8"
+          className="h-7"
         />
         
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" className="p-2">
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="w-64">
+          <SheetContent side="right" className="w-72 p-0">
             <div className="flex flex-col h-full">
-              <div className="py-4">
-                <h2 className="text-lg font-semibold text-gray-800 mb-4">Menu</h2>
-                <nav className="space-y-2">
+              <div className="p-4 border-b">
+                <h2 className="text-lg font-semibold text-gray-800">Menu</h2>
+              </div>
+              <div className="flex-1 p-4">
+                <nav className="space-y-1">
                   {navigation.map((item) => {
                     const isActive = location.pathname === item.href;
                     return (
@@ -68,25 +70,26 @@ const MobileOptimizedLayout = ({ children }: { children: React.ReactNode }) => {
                         key={item.name}
                         to={item.href}
                         onClick={() => setIsOpen(false)}
-                        className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        className={`flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-colors ${
                           isActive
-                            ? "bg-blue-100 text-blue-700"
+                            ? "bg-blue-100 text-blue-700 border border-blue-200"
                             : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                         }`}
                       >
-                        <item.icon className="h-4 w-4 mr-3" />
-                        {item.name}
+                        <item.icon className="h-5 w-5 mr-3 flex-shrink-0" />
+                        <span>{item.name}</span>
                       </Link>
                     );
                   })}
                 </nav>
               </div>
               
-              <div className="mt-auto pt-4 border-t">
+              <div className="p-4 border-t bg-gray-50">
                 <Button
                   onClick={handleLogout}
                   variant="outline"
-                  className="w-full"
+                  size="sm"
+                  className="w-full h-10 text-sm"
                 >
                   Logout
                 </Button>
@@ -96,8 +99,8 @@ const MobileOptimizedLayout = ({ children }: { children: React.ReactNode }) => {
         </Sheet>
       </header>
 
-      {/* Main content */}
-      <main className="pb-4">
+      {/* Main content con padding ottimizzato */}
+      <main className="min-h-[calc(100vh-60px)]">
         {children}
       </main>
     </div>

@@ -45,6 +45,32 @@ const Dashboard = () => {
     },
   });
 
+  // Query separata per le task completate
+  const { data: completedTasksCount } = useQuery({
+    queryKey: ['completedTasksCount'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('task')
+        .select('*', { count: 'exact', head: true })
+        .eq('stato', 'completata');
+      
+      if (error) throw error;
+      return count || 0;
+    },
+  });
+
+  const { data: allTasksCount } = useQuery({
+    queryKey: ['allTasksCount'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('task')
+        .select('*', { count: 'exact', head: true });
+      
+      if (error) throw error;
+      return count || 0;
+    },
+  });
+
   const handleCompleteTask = async (taskId: string) => {
     try {
       const { error } = await supabase
@@ -59,6 +85,8 @@ const Dashboard = () => {
 
       toast.success("Task completata con successo!");
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['completedTasksCount'] });
+      queryClient.invalidateQueries({ queryKey: ['allTasksCount'] });
     } catch (error) {
       console.error('Errore nel completare la task:', error);
       toast.error("Errore nel completare la task");
@@ -73,56 +101,56 @@ const Dashboard = () => {
   const highPriorityTasks = pendingTasks.filter(task => task.priorita === 'alta');
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${isMobile ? 'px-4 py-4' : ''}`}>
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <Button onClick={() => navigate('/nuova-task')}>
+        <h1 className={`font-bold tracking-tight ${isMobile ? 'text-2xl' : 'text-3xl'}`}>Dashboard</h1>
+        <Button onClick={() => navigate('/nuova-task')} size={isMobile ? "sm" : "default"}>
           <Plus className="h-4 w-4 mr-2" />
-          Nuova Task
+          {isMobile ? "Nuova" : "Nuova Task"}
         </Button>
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className={`grid gap-4 ${isMobile ? 'grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-4'}`}>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Task Pendenti</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className={`font-medium ${isMobile ? 'text-xs' : 'text-sm'}`}>Task Pendenti</CardTitle>
+            <Calendar className={`text-muted-foreground ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{pendingTasks.length}</div>
+          <CardContent className={isMobile ? 'pt-1' : ''}>
+            <div className={`font-bold ${isMobile ? 'text-xl' : 'text-2xl'}`}>{pendingTasks.length}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Alta Priorità</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-red-500" />
+            <CardTitle className={`font-medium ${isMobile ? 'text-xs' : 'text-sm'}`}>Alta Priorità</CardTitle>
+            <AlertTriangle className={`text-red-500 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{highPriorityTasks.length}</div>
+          <CardContent className={isMobile ? 'pt-1' : ''}>
+            <div className={`font-bold text-red-600 ${isMobile ? 'text-xl' : 'text-2xl'}`}>{highPriorityTasks.length}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Task Completate</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-500" />
+            <CardTitle className={`font-medium ${isMobile ? 'text-xs' : 'text-sm'}`}>Task Completate</CardTitle>
+            <CheckCircle className={`text-green-500 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">-</div>
-            <p className="text-xs text-muted-foreground">Vai a Task Completate</p>
+          <CardContent className={isMobile ? 'pt-1' : ''}>
+            <div className={`font-bold ${isMobile ? 'text-xl' : 'text-2xl'}`}>{completedTasksCount || 0}</div>
+            {!isMobile && <p className="text-xs text-muted-foreground">Vai a Task Completate</p>}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Totale Task</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className={`font-medium ${isMobile ? 'text-xs' : 'text-sm'}`}>Totale Task</CardTitle>
+            <CheckCircle className={`text-muted-foreground ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{pendingTasks.length}</div>
-            <p className="text-xs text-muted-foreground">Task attive</p>
+          <CardContent className={isMobile ? 'pt-1' : ''}>
+            <div className={`font-bold ${isMobile ? 'text-xl' : 'text-2xl'}`}>{allTasksCount || 0}</div>
+            {!isMobile && <p className="text-xs text-muted-foreground">Task totali</p>}
           </CardContent>
         </Card>
       </div>
@@ -130,9 +158,9 @@ const Dashboard = () => {
       {/* Tasks List */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-semibold">Task da Completare</h2>
+          <h2 className={`font-semibold ${isMobile ? 'text-xl' : 'text-2xl'}`}>Task da Completare</h2>
           {highPriorityTasks.length > 0 && (
-            <Badge variant="destructive">
+            <Badge variant="destructive" className={isMobile ? 'text-xs' : ''}>
               {highPriorityTasks.length} alta priorità
             </Badge>
           )}
@@ -144,7 +172,7 @@ const Dashboard = () => {
           <Card>
             <CardContent className="text-center py-8">
               <p className="text-muted-foreground mb-4">Nessuna task da completare</p>
-              <Button onClick={() => navigate('/nuova-task')}>
+              <Button onClick={() => navigate('/nuova-task')} size={isMobile ? "sm" : "default"}>
                 <Plus className="h-4 w-4 mr-2" />
                 Crea la prima task
               </Button>
@@ -196,6 +224,8 @@ const Dashboard = () => {
           onUpdate={() => {
             setEditingTask(null);
             queryClient.invalidateQueries({ queryKey: ['tasks'] });
+            queryClient.invalidateQueries({ queryKey: ['completedTasksCount'] });
+            queryClient.invalidateQueries({ queryKey: ['allTasksCount'] });
           }}
         />
       )}

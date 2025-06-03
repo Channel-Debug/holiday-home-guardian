@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -53,6 +54,9 @@ const TaskCompletate = () => {
 
       toast.success("Task ripristinata con successo!");
       queryClient.invalidateQueries({ queryKey: ['completedTasks'] });
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['completedTasksCount'] });
+      queryClient.invalidateQueries({ queryKey: ['allTasksCount'] });
     } catch (error) {
       console.error('Errore nel ripristinare la task:', error);
       toast.error("Errore nel ripristinare la task");
@@ -66,20 +70,20 @@ const TaskCompletate = () => {
   const completedTasks = tasks?.filter(task => task.stato === 'completata') || [];
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${isMobile ? 'px-4 py-4' : ''}`}>
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Task Completate</h1>
-        <Button variant="outline">
+        <h1 className={`font-bold tracking-tight ${isMobile ? 'text-2xl' : 'text-3xl'}`}>Task Completate</h1>
+        <Button variant="outline" size={isMobile ? "sm" : "default"}>
           <Download className="h-4 w-4 mr-2" />
-          Esporta Report
+          {isMobile ? "Esporta" : "Esporta Report"}
         </Button>
       </div>
 
       {/* Tasks List */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-semibold">Task Completate</h2>
-          <Badge variant="secondary">{completedTasks.length} tasks</Badge>
+          <h2 className={`font-semibold ${isMobile ? 'text-xl' : 'text-2xl'}`}>Task Completate</h2>
+          <Badge variant="secondary" className={isMobile ? 'text-xs' : ''}>{completedTasks.length} tasks</Badge>
         </div>
 
         {isLoading ? (
