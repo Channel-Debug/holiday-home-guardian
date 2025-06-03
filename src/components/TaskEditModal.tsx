@@ -30,7 +30,7 @@ const TaskEditModal = ({ task, isOpen, onClose, onUpdate }: TaskEditModalProps) 
     priorita: task.priorita || "",
     rilevato_da: task.rilevato_da || "",
     operatore: task.operatore || "",
-    costo_manutenzione: task.costo_manutenzione || "",
+    costo_manutenzione: task.costo_manutenzione?.toString() || "",
   });
   const [loading, setLoading] = useState(false);
 

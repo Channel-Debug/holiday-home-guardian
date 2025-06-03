@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import NuovaTask from "./pages/NuovaTask";
 import TaskCompletate from "./pages/TaskCompletate";
+import EsportaReport from "./pages/EsportaReport";
 import ImportCSV from "./pages/ImportCSV";
 import NotFound from "./pages/NotFound";
 import Profilo from "./pages/Profilo";
@@ -81,6 +82,16 @@ const App = () => {
               element={
                 isAuthenticated ? (
                   <LayoutComponent><TaskCompletate /></LayoutComponent>
+                ) : (
+                  <Login />
+                )
+              } 
+            />
+            <Route 
+              path="/esporta-report" 
+              element={
+                isAuthenticated ? (
+                  <LayoutComponent><EsportaReport /></LayoutComponent>
                 ) : (
                   <Login />
                 )
