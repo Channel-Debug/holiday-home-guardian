@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -7,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { download } from "lucide-react";
+import { Download } from "lucide-react";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { Tables } from "@/integrations/supabase/types";
@@ -55,7 +54,7 @@ const EsportaReport = () => {
       if (error) throw error;
       return data as CompletedTask[];
     },
-    enabled: filterType === "month" || (filterType === "custom" && dateFrom && dateTo)
+    enabled: filterType === "month" || (filterType === "custom" && !!dateFrom && !!dateTo)
   });
 
   const generateCSV = () => {
@@ -239,7 +238,7 @@ const EsportaReport = () => {
             className="w-full"
             size="lg"
           >
-            <download className="h-4 w-4 mr-2" />
+            <Download className="h-4 w-4 mr-2" />
             {isExporting ? "Esportazione in corso..." : "Esporta CSV"}
           </Button>
 
