@@ -8,7 +8,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import Layout from "@/components/Layout";
 import MobileOptimizedLayout from "@/components/MobileOptimizedLayout";
-import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import NuovaTask from "./pages/NuovaTask";
@@ -61,7 +60,7 @@ function App() {
                 <Route path="*" element={<Login />} />
               </>
             ) : (
-              <Route path="/" element={<LayoutComponent><Index /></LayoutComponent>}>
+              <Route path="/" element={<LayoutComponent />}>
                 <Route index element={<Dashboard />} />
                 <Route path="nuova-task" element={<NuovaTask />} />
                 <Route path="task-completate" element={<TaskCompletate />} />

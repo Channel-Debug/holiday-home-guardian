@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, Outlet } from "react-router-dom";
 import { 
   Home, 
   Plus, 
@@ -10,13 +10,14 @@ import {
   User,
   Menu,
   X,
-  Download
+  Download,
+  Archive
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const Layout = ({ children }: { children: React.ReactNode }) => {
+const Layout = () => {
   const location = useLocation();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
@@ -34,6 +35,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     { name: "Dashboard", href: "/", icon: Home },
     { name: "Nuova Task", href: "/nuova-task", icon: Plus },
     { name: "Task Completate", href: "/task-completate", icon: CheckCircle },
+    { name: "Archiviati", href: "/archiviati", icon: Archive },
     { name: "Esporta Report", href: "/esporta-report", icon: Download },
     { name: "Import CSV", href: "/import-csv", icon: Upload },
     { name: "Profilo", href: "/profilo", icon: User },
@@ -106,7 +108,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       {/* Main content */}
       <div className="flex-1">
         <main className="p-6">
-          {children}
+          <Outlet />
         </main>
       </div>
     </div>

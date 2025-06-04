@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, Outlet } from "react-router-dom";
 import { 
   Home, 
   Plus, 
@@ -10,14 +10,15 @@ import {
   User, 
   Menu,
   X,
-  Download
+  Download,
+  Archive
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const MobileOptimizedLayout = ({ children }: { children: React.ReactNode }) => {
+const MobileOptimizedLayout = () => {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -35,6 +36,7 @@ const MobileOptimizedLayout = ({ children }: { children: React.ReactNode }) => {
     { name: "Dashboard", href: "/", icon: Home },
     { name: "Nuova Task", href: "/nuova-task", icon: Plus },
     { name: "Task Completate", href: "/task-completate", icon: CheckCircle },
+    { name: "Archiviati", href: "/archiviati", icon: Archive },
     { name: "Esporta Report", href: "/esporta-report", icon: Download },
     { name: "Import CSV", href: "/import-csv", icon: Upload },
     { name: "Profilo", href: "/profilo", icon: User },
@@ -101,7 +103,7 @@ const MobileOptimizedLayout = ({ children }: { children: React.ReactNode }) => {
 
       {/* Main content con padding ottimizzato */}
       <main className="min-h-[calc(100vh-60px)]">
-        {children}
+        <Outlet />
       </main>
     </div>
   );
