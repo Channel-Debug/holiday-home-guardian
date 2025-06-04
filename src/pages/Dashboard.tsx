@@ -93,6 +93,25 @@ const Dashboard = () => {
     }
   };
 
+  const handleArchiveTask = async (taskId: string) => {
+    try {
+      const { error } = await supabase
+        .from('task')
+        .update({ stato: 'archiviata' })
+        .eq('id', taskId);
+
+      if (error) throw error;
+
+      toast.success("Task archiviata con successo!");
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['completedTasksCount'] });
+      queryClient.invalidateQueries({ queryKey: ['allTasksCount'] });
+    } catch (error) {
+      console.error('Errore nell\'archiviare la task:', error);
+      toast.error("Errore nell'archiviare la task");
+    }
+  };
+
   const handleEditTask = (task: Task) => {
     setEditingTask(task);
   };
@@ -186,8 +205,10 @@ const Dashboard = () => {
                   key={task.id}
                   task={task}
                   onComplete={handleCompleteTask}
+                  onArchive={handleArchiveTask}
                   onEdit={handleEditTask}
                   showCompleteButton={true}
+                  showArchiveButton={true}
                   showEditButton={true}
                   showImageUpload={true}
                   onImageUploaded={() => setImageRefresh(prev => prev + 1)}
@@ -200,8 +221,10 @@ const Dashboard = () => {
                   key={task.id}
                   task={task}
                   onComplete={handleCompleteTask}
+                  onArchive={handleArchiveTask}
                   onEdit={handleEditTask}
                   showCompleteButton={true}
+                  showArchiveButton={true}
                   showEditButton={true}
                   showImageUpload={true}
                   onImageUploaded={() => setImageRefresh(prev => prev + 1)}
