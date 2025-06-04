@@ -1,56 +1,50 @@
 
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
-import Layout from "./components/Layout";
-import MobileOptimizedLayout from "./components/MobileOptimizedLayout";
-import Dashboard from "./pages/Dashboard";
+import Layout from "@/components/Layout";
+import MobileOptimizedLayout from "@/components/MobileOptimizedLayout";
+import Index from "./pages/Index";
 import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
 import NuovaTask from "./pages/NuovaTask";
 import TaskCompletate from "./pages/TaskCompletate";
+import Archiviati from "./pages/Archiviati";
 import EsportaReport from "./pages/EsportaReport";
 import ImportCSV from "./pages/ImportCSV";
-import NotFound from "./pages/NotFound";
 import Profilo from "./pages/Profilo";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+function App() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setIsAuthenticated(!!session);
-    };
+    // Check initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
 
-    checkAuth();
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setIsAuthenticated(!!session);
-      }
-    );
-
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
-  if (isAuthenticated === null) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-blue-600 font-medium">Caricamento...</p>
-        </div>
-      </div>
-    );
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">Caricamento...</div>;
   }
 
   const LayoutComponent = isMobile ? MobileOptimizedLayout : Layout;
@@ -58,71 +52,31 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Sonner />
+        <Toaster />
         <BrowserRouter>
           <Routes>
-            <Route path="/login" element={<Login />} />
-            {isAuthenticated ? (
-              <Route path="/" element={<LayoutComponent><Dashboard /></LayoutComponent>} />
+            {!user ? (
+              <>
+                <Route path="/login" element={<Login />} />
+                <Route path="*" element={<Login />} />
+              </>
             ) : (
-              <Route path="/" element={<Login />} />
+              <Route path="/" element={<LayoutComponent><Index /></LayoutComponent>}>
+                <Route index element={<Dashboard />} />
+                <Route path="nuova-task" element={<NuovaTask />} />
+                <Route path="task-completate" element={<TaskCompletate />} />
+                <Route path="archiviati" element={<Archiviati />} />
+                <Route path="esporta-report" element={<EsportaReport />} />
+                <Route path="import-csv" element={<ImportCSV />} />
+                <Route path="profilo" element={<Profilo />} />
+                <Route path="*" element={<NotFound />} />
+              </Route>
             )}
-            <Route 
-              path="/nuova-task" 
-              element={
-                isAuthenticated ? (
-                  <LayoutComponent><NuovaTask /></LayoutComponent>
-                ) : (
-                  <Login />
-                )
-              } 
-            />
-            <Route 
-              path="/task-completate" 
-              element={
-                isAuthenticated ? (
-                  <LayoutComponent><TaskCompletate /></LayoutComponent>
-                ) : (
-                  <Login />
-                )
-              } 
-            />
-            <Route 
-              path="/esporta-report" 
-              element={
-                isAuthenticated ? (
-                  <LayoutComponent><EsportaReport /></LayoutComponent>
-                ) : (
-                  <Login />
-                )
-              } 
-            />
-            <Route 
-              path="/import-csv" 
-              element={
-                isAuthenticated ? (
-                  <LayoutComponent><ImportCSV /></LayoutComponent>
-                ) : (
-                  <Login />
-                )
-              } 
-            />
-            <Route 
-              path="/profilo" 
-              element={
-                isAuthenticated ? (
-                  <LayoutComponent><Profilo /></LayoutComponent>
-                ) : (
-                  <Login />
-                )
-              } 
-            />
-            <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
   );
-};
+}
 
 export default App;

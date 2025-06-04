@@ -90,6 +90,7 @@ export type Database = {
           descrizione: string | null
           id: string
           mezzo_id: string | null
+          note: string | null
           operatore: string | null
           priorita: string | null
           rilevato_da: string | null
@@ -104,6 +105,7 @@ export type Database = {
           descrizione?: string | null
           id?: string
           mezzo_id?: string | null
+          note?: string | null
           operatore?: string | null
           priorita?: string | null
           rilevato_da?: string | null
@@ -118,6 +120,7 @@ export type Database = {
           descrizione?: string | null
           id?: string
           mezzo_id?: string | null
+          note?: string | null
           operatore?: string | null
           priorita?: string | null
           rilevato_da?: string | null

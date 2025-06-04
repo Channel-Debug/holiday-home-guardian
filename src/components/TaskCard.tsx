@@ -1,9 +1,9 @@
 
 import React from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle2, Edit, RotateCcw } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle, Edit, RotateCcw, Archive } from "lucide-react";
 import { ImageUpload } from "@/components/ImageUpload";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -15,165 +15,194 @@ type Task = Tables<"task"> & {
 interface TaskCardProps {
   task: Task;
   onComplete?: (taskId: string) => void;
-  onEdit?: (task: Task) => void;
+  onArchive?: (taskId: string) => void;
   onRestore?: (taskId: string) => void;
+  onEdit?: (task: Task) => void;
   showCompleteButton?: boolean;
-  showEditButton?: boolean;
+  showArchiveButton?: boolean;
   showRestoreButton?: boolean;
+  showEditButton?: boolean;
   showImageUpload?: boolean;
   onImageUploaded?: () => void;
-  children?: React.ReactNode;
   refresh?: number;
+  children?: React.ReactNode;
 }
 
 const TaskCard = ({ 
   task, 
   onComplete, 
+  onArchive,
+  onRestore, 
   onEdit, 
-  onRestore,
   showCompleteButton = false,
-  showEditButton = false,
+  showArchiveButton = false,
   showRestoreButton = false,
+  showEditButton = false,
   showImageUpload = false,
   onImageUploaded,
-  children,
-  refresh
+  refresh,
+  children 
 }: TaskCardProps) => {
-  const getPriorityVariant = (priority: string): "default" | "destructive" | "secondary" | "outline" => {
-    switch (priority?.toLowerCase()) {
-      case 'alta':
-        return 'destructive';
-      case 'media':
-        return 'secondary';
-      case 'bassa':
-        return 'default';
-      default:
-        return 'outline';
+  const getPriorityColor = (priority: string | null) => {
+    switch (priority) {
+      case 'alta': return 'destructive';
+      case 'media': return 'default';
+      case 'bassa': return 'secondary';
+      default: return 'outline';
     }
   };
 
+  const getPriorityText = (priority: string | null) => {
+    switch (priority) {
+      case 'alta': return '🔴 Alta';
+      case 'media': return '🟡 Media';
+      case 'bassa': return '🟢 Bassa';
+      default: return 'Non specificata';
+    }
+  };
+
+  const formatCurrency = (amount: number | null) => {
+    if (!amount) return 'Non specificato';
+    return new Intl.NumberFormat('it-IT', {
+      style: 'currency',
+      currency: 'EUR'
+    }).format(amount);
+  };
+
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return 'Non specificato';
     return new Date(dateString).toLocaleDateString('it-IT', {
-      day: '2-digit',
-      month: '2-digit',
       year: 'numeric',
+      month: 'short',
+      day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
     });
   };
 
-  const getLocationInfo = () => {
-    if (task.tipo_manutenzione === 'mezzo' && task.mezzi) {
-      return {
-        name: task.mezzi.nome,
-        address: task.mezzi.tipo || ''
-      };
-    } else if (task.casa) {
-      return {
-        name: task.casa.nome,
-        address: task.casa.indirizzo || ''
-      };
-    }
-    return { name: '', address: '' };
-  };
-
-  const locationInfo = getLocationInfo();
-
   return (
-    <Card className="h-full">
+    <Card className="h-full flex flex-col">
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">
-            {locationInfo.name}
-            {locationInfo.address && (
-              <span className="block text-sm text-gray-500 font-normal mt-1">
-                {locationInfo.address}
-              </span>
-            )}
+        <div className="flex items-start justify-between">
+          <CardTitle className="text-lg font-semibold line-clamp-2">
+            {task.descrizione || 'Descrizione non disponibile'}
           </CardTitle>
-          <Badge variant={getPriorityVariant(task.priorita || '')}>
-            {task.priorita?.toUpperCase()}
+          <Badge variant={getPriorityColor(task.priorita)} className="ml-2 flex-shrink-0">
+            {getPriorityText(task.priorita)}
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
-        <p className="text-gray-600">{task.descrizione}</p>
-        
-        <div className="grid grid-cols-2 gap-4 text-sm">
+      
+      <CardContent className="flex-1 flex flex-col">
+        <div className="space-y-3 flex-1">
           <div>
-            <span className="font-medium text-gray-500">Rilevato da:</span>
-            <p>{task.rilevato_da}</p>
+            <span className="font-medium text-sm text-gray-600">
+              {task.tipo_manutenzione === 'casa' ? 'Casa:' : 'Mezzo:'}
+            </span>
+            <p className="text-sm">
+              {task.casa?.nome || task.mezzi?.nome || 'Non specificato'}
+            </p>
+            {task.casa?.indirizzo && (
+              <p className="text-xs text-gray-500">{task.casa.indirizzo}</p>
+            )}
           </div>
+
+          {task.rilevato_da && (
+            <div>
+              <span className="font-medium text-sm text-gray-600">Rilevato da:</span>
+              <p className="text-sm">{task.rilevato_da}</p>
+            </div>
+          )}
+
           {task.operatore && (
             <div>
-              <span className="font-medium text-gray-500">Operatore:</span>
-              <p>{task.operatore}</p>
+              <span className="font-medium text-sm text-gray-600">Operatore:</span>
+              <p className="text-sm">{task.operatore}</p>
             </div>
           )}
+
+          {task.costo_manutenzione && (
+            <div>
+              <span className="font-medium text-sm text-gray-600">Costo (IVA 22% inclusa):</span>
+              <p className="text-sm font-medium">{formatCurrency(task.costo_manutenzione)}</p>
+            </div>
+          )}
+
+          {task.note && (
+            <div>
+              <span className="font-medium text-sm text-gray-600">Note:</span>
+              <p className="text-sm">{task.note}</p>
+            </div>
+          )}
+
           <div>
-            <span className="font-medium text-gray-500">Data creazione:</span>
-            <p>{formatDate(task.data_creazione)}</p>
+            <span className="font-medium text-sm text-gray-600">Creata il:</span>
+            <p className="text-xs text-gray-500">{formatDate(task.data_creazione)}</p>
           </div>
+
           {task.data_completamento && (
             <div>
-              <span className="font-medium text-gray-500">Data completamento:</span>
-              <p className="text-green-600">{formatDate(task.data_completamento)}</p>
+              <span className="font-medium text-sm text-gray-600">Completata il:</span>
+              <p className="text-xs text-gray-500">{formatDate(task.data_completamento)}</p>
             </div>
           )}
-          {task.costo_manutenzione && (
-            <div className="col-span-2">
-              <span className="font-medium text-gray-500">Costo:</span>
-              <p className="text-green-600 font-semibold">€{task.costo_manutenzione} (IVA inclusa)</p>
+
+          {children}
+
+          {showImageUpload && onImageUploaded && (
+            <div>
+              <ImageUpload 
+                taskId={task.id}
+                onImageUploaded={onImageUploaded}
+              />
             </div>
           )}
         </div>
 
-        {/* Upload immagini se abilitato */}
-        {showImageUpload && onImageUploaded && (
-          <div className="pt-2">
-            <ImageUpload 
-              taskId={task.id}
-              onImageUploaded={onImageUploaded}
-            />
-          </div>
-        )}
-
-        {/* Immagini se presenti */}
-        {children && (
-          <div className="pt-2">
-            {React.cloneElement(children as React.ReactElement, { refresh })}
-          </div>
-        )}
-
-        <div className="flex gap-2 pt-2">
+        <div className="flex gap-2 mt-4 pt-3 border-t">
           {showCompleteButton && onComplete && (
-            <Button 
+            <Button
               onClick={() => onComplete(task.id)}
               className="flex-1"
+              size="sm"
             >
-              <CheckCircle2 className="h-4 w-4 mr-2" />
-              Completa Task
+              <CheckCircle className="h-4 w-4 mr-1" />
+              Completa
             </Button>
           )}
-          {showEditButton && onEdit && (
-            <Button 
-              onClick={() => onEdit(task)}
-              variant="outline"
+          
+          {showArchiveButton && onArchive && (
+            <Button
+              onClick={() => onArchive(task.id)}
+              variant="secondary"
               className="flex-1"
+              size="sm"
             >
-              <Edit className="h-4 w-4 mr-2" />
-              Modifica
+              <Archive className="h-4 w-4 mr-1" />
+              Archivia
             </Button>
           )}
+
           {showRestoreButton && onRestore && (
             <Button
-              variant="outline"
               onClick={() => onRestore(task.id)}
+              variant="outline"
               className="flex-1"
+              size="sm"
             >
-              <RotateCcw className="h-4 w-4 mr-2" />
+              <RotateCcw className="h-4 w-4 mr-1" />
               Ripristina
+            </Button>
+          )}
+
+          {showEditButton && onEdit && (
+            <Button
+              onClick={() => onEdit(task)}
+              variant="outline"
+              size="sm"
+            >
+              <Edit className="h-4 w-4 mr-1" />
+              Modifica
             </Button>
           )}
         </div>
