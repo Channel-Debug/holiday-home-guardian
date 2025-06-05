@@ -12,6 +12,7 @@ import TaskEditModal from "@/components/TaskEditModal";
 import { TaskImages } from "@/components/TaskImages";
 import TaskCard from "@/components/TaskCard";
 import MobileTaskCard from "@/components/MobileTaskCard";
+import TaskFilters from "@/components/TaskFilters";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -26,6 +27,8 @@ const Dashboard = () => {
   const isMobile = useIsMobile();
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [imageRefresh, setImageRefresh] = useState(0);
+  const [selectedCasa, setSelectedCasa] = useState("all");
+  const [selectedPriorita, setSelectedPriorita] = useState("all");
 
   const { data: tasks, isLoading } = useQuery({
     queryKey: ['tasks'],
@@ -116,8 +119,22 @@ const Dashboard = () => {
     setEditingTask(task);
   };
 
-  const pendingTasks = tasks?.filter(task => task.stato === 'da_fare') || [];
-  const highPriorityTasks = pendingTasks.filter(task => task.priorita === 'alta');
+  const handleClearFilters = () => {
+    setSelectedCasa("all");
+    setSelectedPriorita("all");
+  };
+
+  // Filtra le task in base ai filtri selezionati
+  const filteredTasks = tasks?.filter(task => {
+    if (task.stato !== 'da_fare') return false;
+    
+    if (selectedCasa !== "all" && task.casa_id !== selectedCasa) return false;
+    if (selectedPriorita !== "all" && task.priorita !== selectedPriorita) return false;
+    
+    return true;
+  }) || [];
+
+  const highPriorityTasks = filteredTasks.filter(task => task.priorita === 'alta');
 
   return (
     <div className={`space-y-6 ${isMobile ? 'px-4 py-4' : ''}`}>
@@ -185,21 +202,33 @@ const Dashboard = () => {
           )}
         </div>
 
+        <TaskFilters
+          selectedCasa={selectedCasa}
+          selectedPriorita={selectedPriorita}
+          onCasaChange={setSelectedCasa}
+          onPrioritaChange={setSelectedPriorita}
+          onClearFilters={handleClearFilters}
+        />
+
         {isLoading ? (
           <div className="text-center py-8">Caricamento tasks...</div>
-        ) : pendingTasks.length === 0 ? (
+        ) : filteredTasks.length === 0 ? (
           <Card>
             <CardContent className="text-center py-8">
-              <p className="text-muted-foreground mb-4">Nessuna task da completare</p>
-              <Button onClick={() => navigate('/nuova-task')} size={isMobile ? "sm" : "default"}>
-                <Plus className="h-4 w-4 mr-2" />
-                Crea la prima task
-              </Button>
+              <p className="text-muted-foreground mb-4">
+                {tasks?.length === 0 ? "Nessuna task da completare" : "Nessuna task trovata con i filtri selezionati"}
+              </p>
+              {tasks?.length === 0 && (
+                <Button onClick={() => navigate('/nuova-task')} size={isMobile ? "sm" : "default"}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Crea la prima task
+                </Button>
+              )}
             </CardContent>
           </Card>
         ) : (
           <div className={isMobile ? "space-y-4" : "grid gap-6 md:grid-cols-2 lg:grid-cols-3"}>
-            {pendingTasks.map((task) => (
+            {filteredTasks.map((task) => (
               isMobile ? (
                 <MobileTaskCard
                   key={task.id}

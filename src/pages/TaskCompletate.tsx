@@ -11,6 +11,7 @@ import TaskEditModal from "@/components/TaskEditModal";
 import { TaskImages } from "@/components/TaskImages";
 import TaskCard from "@/components/TaskCard";
 import MobileTaskCard from "@/components/MobileTaskCard";
+import TaskFilters from "@/components/TaskFilters";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -24,6 +25,8 @@ const TaskCompletate = () => {
   const isMobile = useIsMobile();
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [imageRefresh, setImageRefresh] = useState(0);
+  const [selectedCasa, setSelectedCasa] = useState("all");
+  const [selectedPriorita, setSelectedPriorita] = useState("all");
 
   const { data: tasks, isLoading } = useQuery({
     queryKey: ['completedTasks'],
@@ -87,7 +90,18 @@ const TaskCompletate = () => {
     setEditingTask(task);
   };
 
-  const completedTasks = tasks?.filter(task => task.stato === 'completata') || [];
+  const handleClearFilters = () => {
+    setSelectedCasa("all");
+    setSelectedPriorita("all");
+  };
+
+  // Filtra le task completate in base ai filtri selezionati
+  const filteredTasks = tasks?.filter(task => {
+    if (selectedCasa !== "all" && task.casa_id !== selectedCasa) return false;
+    if (selectedPriorita !== "all" && task.priorita !== selectedPriorita) return false;
+    
+    return true;
+  }) || [];
 
   return (
     <div className={`space-y-6 ${isMobile ? 'px-4 py-4' : ''}`}>
@@ -103,20 +117,30 @@ const TaskCompletate = () => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className={`font-semibold ${isMobile ? 'text-xl' : 'text-2xl'}`}>Task Completate</h2>
-          <Badge variant="secondary" className={isMobile ? 'text-xs' : ''}>{completedTasks.length} tasks</Badge>
+          <Badge variant="secondary" className={isMobile ? 'text-xs' : ''}>{filteredTasks.length} tasks</Badge>
         </div>
+
+        <TaskFilters
+          selectedCasa={selectedCasa}
+          selectedPriorita={selectedPriorita}
+          onCasaChange={setSelectedCasa}
+          onPrioritaChange={setSelectedPriorita}
+          onClearFilters={handleClearFilters}
+        />
 
         {isLoading ? (
           <div className="text-center py-8">Caricamento tasks completate...</div>
-        ) : completedTasks.length === 0 ? (
+        ) : filteredTasks.length === 0 ? (
           <Card>
             <CardContent className="text-center py-8">
-              <p className="text-muted-foreground mb-4">Nessuna task completata</p>
+              <p className="text-muted-foreground mb-4">
+                {tasks?.length === 0 ? "Nessuna task completata" : "Nessuna task trovata con i filtri selezionati"}
+              </p>
             </CardContent>
           </Card>
         ) : (
           <div className={isMobile ? "space-y-4" : "grid gap-6 md:grid-cols-2 lg:grid-cols-3"}>
-            {completedTasks.map((task) => (
+            {filteredTasks.map((task) => (
               isMobile ? (
                 <MobileTaskCard
                   key={task.id}

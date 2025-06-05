@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -24,6 +23,7 @@ const NuovaTask = () => {
     casa_id: "",
     mezzo_id: "",
     descrizione: "",
+    note: "",
     priorita: "",
     rilevato_da: "",
     operatore: "",
@@ -69,6 +69,7 @@ const NuovaTask = () => {
         casa_id: formData.tipo_manutenzione === 'casa' ? formData.casa_id : null,
         mezzo_id: formData.tipo_manutenzione === 'mezzo' ? formData.mezzo_id : null,
         descrizione: formData.descrizione,
+        note: formData.note,
         priorita: formData.priorita,
         rilevato_da: formData.rilevato_da,
         operatore: formData.operatore,
@@ -93,6 +94,7 @@ const NuovaTask = () => {
         casa_id: "",
         mezzo_id: "",
         descrizione: "",
+        note: "",
         priorita: "",
         rilevato_da: "",
         operatore: "",
@@ -199,6 +201,17 @@ const NuovaTask = () => {
                   placeholder="Descrivi il problema o l'intervento necessario..."
                   rows={4}
                   required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="note">Note</Label>
+                <Textarea
+                  id="note"
+                  value={formData.note}
+                  onChange={(e) => handleInputChange('note', e.target.value)}
+                  placeholder="Note aggiuntive (opzionale)..."
+                  rows={3}
                 />
               </div>
 

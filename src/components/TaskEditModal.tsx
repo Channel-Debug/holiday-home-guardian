@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -10,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import OperatorSelect from "./OperatorSelect";
+import CostInput from "./CostInput";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Task = Tables<"task"> & {
@@ -27,10 +27,11 @@ const TaskEditModal = ({ task, isOpen, onClose, onUpdate }: TaskEditModalProps) 
   const [formData, setFormData] = useState({
     casa_id: task.casa_id || "",
     descrizione: task.descrizione || "",
+    note: task.note || "",
     priorita: task.priorita || "",
     rilevato_da: task.rilevato_da || "",
     operatore: task.operatore || "",
-    costo_manutenzione: task.costo_manutenzione?.toString() || "",
+    costo_manutenzione: task.costo_manutenzione || null,
   });
   const [loading, setLoading] = useState(false);
 
@@ -57,10 +58,11 @@ const TaskEditModal = ({ task, isOpen, onClose, onUpdate }: TaskEditModalProps) 
         .update({
           casa_id: formData.casa_id,
           descrizione: formData.descrizione,
+          note: formData.note,
           priorita: formData.priorita,
           rilevato_da: formData.rilevato_da,
           operatore: formData.operatore,
-          costo_manutenzione: formData.costo_manutenzione ? parseFloat(formData.costo_manutenzione) : null,
+          costo_manutenzione: formData.costo_manutenzione,
         })
         .eq('id', task.id);
 
@@ -77,7 +79,7 @@ const TaskEditModal = ({ task, isOpen, onClose, onUpdate }: TaskEditModalProps) 
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | number | null) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -125,6 +127,17 @@ const TaskEditModal = ({ task, isOpen, onClose, onUpdate }: TaskEditModalProps) 
           </div>
 
           <div>
+            <Label htmlFor="note">Note</Label>
+            <Textarea
+              id="note"
+              value={formData.note}
+              onChange={(e) => handleInputChange('note', e.target.value)}
+              placeholder="Note aggiuntive (opzionale)..."
+              rows={3}
+            />
+          </div>
+
+          <div>
             <Label htmlFor="priorita">Priorità *</Label>
             <Select 
               value={formData.priorita} 
@@ -158,18 +171,10 @@ const TaskEditModal = ({ task, isOpen, onClose, onUpdate }: TaskEditModalProps) 
             onChange={(value) => handleInputChange('operatore', value)}
           />
 
-          <div>
-            <Label htmlFor="costo_manutenzione">Costo Manutenzione (IVA 22% inclusa) €</Label>
-            <Input
-              id="costo_manutenzione"
-              type="number"
-              step="0.01"
-              min="0"
-              value={formData.costo_manutenzione}
-              onChange={(e) => handleInputChange('costo_manutenzione', e.target.value)}
-              placeholder="0.00"
-            />
-          </div>
+          <CostInput
+            value={formData.costo_manutenzione}
+            onChange={(value) => handleInputChange('costo_manutenzione', value)}
+          />
 
           <div className="flex gap-4 pt-4">
             <Button 

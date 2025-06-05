@@ -10,38 +10,38 @@ interface CostInputProps {
   placeholder?: string;
 }
 
-const CostInput = ({ value, onChange, label = "Costo (senza IVA)", placeholder = "es. 100.00" }: CostInputProps) => {
-  const [costWithoutVAT, setCostWithoutVAT] = useState<string>("");
+const CostInput = ({ value, onChange, label = "Costo (IVA 22% inclusa)", placeholder = "es. 122.00" }: CostInputProps) => {
   const [costWithVAT, setCostWithVAT] = useState<string>("");
+  const [costWithoutVAT, setCostWithoutVAT] = useState<string>("");
 
   useEffect(() => {
     if (value) {
-      // Se abbiamo un valore, calcoliamo il costo senza IVA (dividendo per 1.22)
+      setCostWithVAT(value.toFixed(2));
+      // Calcoliamo il costo senza IVA (dividendo per 1.22)
       const withoutVAT = value / 1.22;
       setCostWithoutVAT(withoutVAT.toFixed(2));
-      setCostWithVAT(value.toFixed(2));
     } else {
-      setCostWithoutVAT("");
       setCostWithVAT("");
+      setCostWithoutVAT("");
     }
   }, [value]);
 
   const handleInputChange = (inputValue: string) => {
-    setCostWithoutVAT(inputValue);
+    setCostWithVAT(inputValue);
     
     if (inputValue === "" || inputValue === null) {
-      setCostWithVAT("");
+      setCostWithoutVAT("");
       onChange(null);
       return;
     }
 
     const numValue = parseFloat(inputValue);
-    if (!isNaN(numValue)) {
-      const withVAT = numValue * 1.22;
-      setCostWithVAT(withVAT.toFixed(2));
-      onChange(withVAT);
+    if (!isNaN(numValue) && numValue >= 0) {
+      const withoutVAT = numValue / 1.22;
+      setCostWithoutVAT(withoutVAT.toFixed(2));
+      onChange(numValue);
     } else {
-      setCostWithVAT("");
+      setCostWithoutVAT("");
       onChange(null);
     }
   };
@@ -54,13 +54,13 @@ const CostInput = ({ value, onChange, label = "Costo (senza IVA)", placeholder =
         type="number"
         step="0.01"
         min="0"
-        value={costWithoutVAT}
+        value={costWithVAT}
         onChange={(e) => handleInputChange(e.target.value)}
         placeholder={placeholder}
       />
-      {costWithVAT && (
+      {costWithoutVAT && (
         <p className="text-sm text-gray-600">
-          Costo con IVA (22%): <span className="font-semibold">€{costWithVAT}</span>
+          Costo senza IVA: <span className="font-semibold">€{costWithoutVAT}</span>
         </p>
       )}
     </div>
