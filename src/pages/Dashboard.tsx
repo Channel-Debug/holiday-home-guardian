@@ -154,7 +154,7 @@ const Dashboard = () => {
             <Calendar className={`text-muted-foreground ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
           </CardHeader>
           <CardContent className={isMobile ? 'pt-1' : ''}>
-            <div className={`font-bold ${isMobile ? 'text-xl' : 'text-2xl'}`}>{pendingTasks.length}</div>
+            <div className={`font-bold ${isMobile ? 'text-xl' : 'text-2xl'}`}>{filteredTasks.length}</div>
           </CardContent>
         </Card>
 
