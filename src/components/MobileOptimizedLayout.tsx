@@ -11,7 +11,8 @@ import {
   Menu,
   X,
   Download,
-  Archive
+  Archive,
+  LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -26,6 +27,7 @@ const MobileOptimizedLayout = () => {
     try {
       await supabase.auth.signOut();
       toast.success("Logout effettuato con successo");
+      setIsOpen(false);
     } catch (error) {
       console.error("Errore durante il logout:", error);
       toast.error("Errore durante il logout");
@@ -91,8 +93,9 @@ const MobileOptimizedLayout = () => {
                   onClick={handleLogout}
                   variant="outline"
                   size="sm"
-                  className="w-full h-10 text-sm"
+                  className="w-full h-10 text-sm flex items-center justify-center"
                 >
+                  <LogOut className="h-4 w-4 mr-2" />
                   Logout
                 </Button>
               </div>

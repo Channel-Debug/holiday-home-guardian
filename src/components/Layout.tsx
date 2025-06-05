@@ -11,8 +11,7 @@ import {
   Menu,
   X,
   Download,
-  Archive,
-  LogOut
+  Archive
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -92,18 +91,6 @@ const Layout = () => {
             })}
           </div>
         </nav>
-
-        <div className={`absolute bottom-4 ${isSidebarCollapsed ? 'left-1/2 transform -translate-x-1/2' : 'left-4 right-4'}`}>
-          <Button
-            onClick={handleLogout}
-            variant="outline"
-            size="sm"
-            className={`${isSidebarCollapsed ? 'w-8 h-8 p-0' : 'w-full h-8'} text-xs flex items-center justify-center`}
-            title={isSidebarCollapsed ? 'Logout' : ''}
-          >
-            {isSidebarCollapsed ? <LogOut className="h-4 w-4" /> : 'Logout'}
-          </Button>
-        </div>
       </div>
 
       {/* Main content */}
