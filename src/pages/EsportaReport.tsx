@@ -40,18 +40,40 @@ const EsportaReport = () => {
         endDate = new Date(dateTo + "T23:59:59").toISOString();
       }
 
+      console.log('Query parameters:', { startDate, endDate });
+
+      // Prima controlliamo tutte le task per vedere gli stati disponibili
+      const { data: allTasks, error: allTasksError } = await supabase
+        .from('task')
+        .select('stato, data_completamento')
+        .not('data_completamento', 'is', null);
+
+      if (allTasksError) {
+        console.error('Errore nel recupero di tutte le task:', allTasksError);
+      } else {
+        console.log('Tutte le task con data_completamento:', allTasks);
+        const uniqueStates = [...new Set(allTasks.map(task => task.stato))];
+        console.log('Stati unici trovati:', uniqueStates);
+      }
+
+      // Ora facciamo la query principale cercando task con data_completamento non null
       const { data, error } = await supabase
         .from('task')
         .select(`
           *,
           casa (*)
         `)
-        .eq('stato', 'completata')
+        .not('data_completamento', 'is', null)
         .gte('data_completamento', startDate)
         .lte('data_completamento', endDate)
         .order('data_completamento', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Errore nella query principale:', error);
+        throw error;
+      }
+      
+      console.log('Task trovate con data_completamento nel periodo:', data);
       return data as CompletedTask[];
     },
     enabled: filterType === "month" || (filterType === "custom" && !!dateFrom && !!dateTo)
@@ -83,7 +105,7 @@ const EsportaReport = () => {
       task.descrizione || "N/A",
       task.priorita?.toUpperCase() || "N/A",
       task.rilevato_da || "N/A",
-      "Completata",
+      task.stato || "N/A",
       task.operatore || "N/A",
       task.data_completamento ? new Date(task.data_completamento).toLocaleString('it-IT') : "N/A",
       task.costo_manutenzione ? task.costo_manutenzione.toString() : "N/A"
