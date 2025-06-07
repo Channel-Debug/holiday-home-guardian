@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -12,6 +11,7 @@ import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 import OperatorSelect from "./OperatorSelect";
 import CostInput from "./CostInput";
+import HouseSelectWithSearch from "./HouseSelectWithSearch";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Task = Tables<"task"> & {
@@ -137,7 +137,7 @@ const TaskEditModal = ({ task, isOpen, onClose, onUpdate }: TaskEditModalProps) 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto w-[95vw] mx-auto">
         <DialogHeader>
           <DialogTitle>Modifica Task</DialogTitle>
         </DialogHeader>
@@ -145,22 +145,12 @@ const TaskEditModal = ({ task, isOpen, onClose, onUpdate }: TaskEditModalProps) 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <Label htmlFor="casa">Casa *</Label>
-            <Select 
-              value={formData.casa_id} 
+            <HouseSelectWithSearch
+              houses={houses}
+              value={formData.casa_id}
               onValueChange={(value) => handleInputChange('casa_id', value)}
               required
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Seleziona una casa" />
-              </SelectTrigger>
-              <SelectContent>
-                {houses?.map((casa) => (
-                  <SelectItem key={casa.id} value={casa.id}>
-                    {casa.nome}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            />
           </div>
 
           <div>
@@ -225,18 +215,19 @@ const TaskEditModal = ({ task, isOpen, onClose, onUpdate }: TaskEditModalProps) 
             onChange={(value) => handleInputChange('costo_manutenzione', value)}
           />
 
-          <div className="flex gap-4 pt-4">
+          <div className="space-y-3 pt-4">
             <Button 
               type="button" 
               variant="destructive" 
               onClick={handleDelete}
               disabled={deleteLoading}
-              className="flex items-center gap-2"
+              className="w-full flex items-center justify-center gap-2"
             >
               <Trash2 className="h-4 w-4" />
               {deleteLoading ? "Eliminazione..." : "Elimina Task"}
             </Button>
-            <div className="flex-1 flex gap-2">
+            
+            <div className="flex flex-col sm:flex-row gap-2">
               <Button 
                 type="button" 
                 variant="outline" 

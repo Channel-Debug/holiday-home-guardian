@@ -14,6 +14,7 @@ import { ImageUpload } from "@/components/ImageUpload";
 import { TaskImages } from "@/components/TaskImages";
 import OperatorSelect from "@/components/OperatorSelect";
 import CostInput from "@/components/CostInput";
+import HouseSelectWithSearch from "@/components/HouseSelectWithSearch";
 import type { Tables } from "@/integrations/supabase/types";
 
 const NuovaTask = () => {
@@ -151,22 +152,12 @@ const NuovaTask = () => {
               {formData.tipo_manutenzione === 'casa' && (
                 <div>
                   <Label htmlFor="casa">Casa *</Label>
-                  <Select 
-                    value={formData.casa_id} 
+                  <HouseSelectWithSearch
+                    houses={houses}
+                    value={formData.casa_id}
                     onValueChange={(value) => handleInputChange('casa_id', value)}
                     required
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleziona una casa" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {houses?.map((casa) => (
-                        <SelectItem key={casa.id} value={casa.id}>
-                          {casa.nome} {casa.indirizzo && `- ${casa.indirizzo}`}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  />
                 </div>
               )}
 

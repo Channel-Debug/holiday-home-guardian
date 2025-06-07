@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -61,6 +60,15 @@ const TaskCard = ({
     }
   };
 
+  const getPriorityBackground = (priority: string | null) => {
+    switch (priority) {
+      case 'alta': return 'bg-red-500/35';
+      case 'media': return 'bg-yellow-500/35';
+      case 'bassa': return 'bg-green-500/35';
+      default: return '';
+    }
+  };
+
   const formatCurrency = (amount: number | null) => {
     if (!amount) return 'Non specificato';
     return new Intl.NumberFormat('it-IT', {
@@ -87,7 +95,10 @@ const TaskCard = ({
           <CardTitle className="text-lg font-semibold line-clamp-2">
             {task.descrizione || 'Descrizione non disponibile'}
           </CardTitle>
-          <Badge variant={getPriorityColor(task.priorita)} className="ml-2 flex-shrink-0">
+          <Badge 
+            variant={getPriorityColor(task.priorita)} 
+            className={`ml-2 flex-shrink-0 ${getPriorityBackground(task.priorita)}`}
+          >
             {getPriorityText(task.priorita)}
           </Badge>
         </div>
