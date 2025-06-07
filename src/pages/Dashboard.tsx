@@ -159,7 +159,7 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-red-500/35">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className={`font-medium ${isMobile ? 'text-xs' : 'text-sm'}`}>Alta Priorità</CardTitle>
             <AlertTriangle className={`text-red-500 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
@@ -169,7 +169,7 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-green-500/35">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className={`font-medium ${isMobile ? 'text-xs' : 'text-sm'}`}>Task Completate</CardTitle>
             <CheckCircle className={`text-green-500 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
@@ -180,7 +180,7 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-yellow-500/35">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className={`font-medium ${isMobile ? 'text-xs' : 'text-sm'}`}>Task Archiviate</CardTitle>
             <CheckCircle className={`text-muted-foreground ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
