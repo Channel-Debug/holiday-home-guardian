@@ -16,7 +16,7 @@ const CostInput = ({ value, onChange, label = "Costo (IVA 22% inclusa)", placeho
 
   useEffect(() => {
     if (value) {
-      setCostWithVAT(value.toFixed(2));
+      setCostWithVAT(value.toString());
       // Calcoliamo il costo senza IVA (dividendo per 1.22)
       const withoutVAT = value / 1.22;
       setCostWithoutVAT(withoutVAT.toFixed(2));
@@ -51,9 +51,8 @@ const CostInput = ({ value, onChange, label = "Costo (IVA 22% inclusa)", placeho
       <Label htmlFor="cost-input">{label}</Label>
       <Input
         id="cost-input"
-        type="number"
-        step="0.01"
-        min="0"
+        type="text"
+        inputMode="decimal"
         value={costWithVAT}
         onChange={(e) => handleInputChange(e.target.value)}
         placeholder={placeholder}

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -62,12 +61,14 @@ const Dashboard = () => {
     },
   });
 
-  const { data: allTasksCount } = useQuery({
-    queryKey: ['allTasksCount'],
+  // Replace allTasksCount with archivedTasksCount
+  const { data: archivedTasksCount } = useQuery({
+    queryKey: ['archivedTasksCount'],
     queryFn: async () => {
       const { count, error } = await supabase
         .from('task')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true })
+        .eq('stato', 'archiviata');
       
       if (error) throw error;
       return count || 0;
@@ -89,7 +90,7 @@ const Dashboard = () => {
       toast.success("Task completata con successo!");
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       queryClient.invalidateQueries({ queryKey: ['completedTasksCount'] });
-      queryClient.invalidateQueries({ queryKey: ['allTasksCount'] });
+      queryClient.invalidateQueries({ queryKey: ['archivedTasksCount'] });
     } catch (error) {
       console.error('Errore nel completare la task:', error);
       toast.error("Errore nel completare la task");
@@ -108,7 +109,7 @@ const Dashboard = () => {
       toast.success("Task archiviata con successo!");
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       queryClient.invalidateQueries({ queryKey: ['completedTasksCount'] });
-      queryClient.invalidateQueries({ queryKey: ['allTasksCount'] });
+      queryClient.invalidateQueries({ queryKey: ['archivedTasksCount'] });
     } catch (error) {
       console.error('Errore nell\'archiviare la task:', error);
       toast.error("Errore nell'archiviare la task");
@@ -181,12 +182,12 @@ const Dashboard = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className={`font-medium ${isMobile ? 'text-xs' : 'text-sm'}`}>Totale Task</CardTitle>
+            <CardTitle className={`font-medium ${isMobile ? 'text-xs' : 'text-sm'}`}>Task Archiviate</CardTitle>
             <CheckCircle className={`text-muted-foreground ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
           </CardHeader>
           <CardContent className={isMobile ? 'pt-1' : ''}>
-            <div className={`font-bold ${isMobile ? 'text-xl' : 'text-2xl'}`}>{allTasksCount || 0}</div>
-            {!isMobile && <p className="text-xs text-muted-foreground">Task totali</p>}
+            <div className={`font-bold ${isMobile ? 'text-xl' : 'text-2xl'}`}>{archivedTasksCount || 0}</div>
+            {!isMobile && <p className="text-xs text-muted-foreground">Task archiviate</p>}
           </CardContent>
         </Card>
       </div>
@@ -277,7 +278,7 @@ const Dashboard = () => {
             setEditingTask(null);
             queryClient.invalidateQueries({ queryKey: ['tasks'] });
             queryClient.invalidateQueries({ queryKey: ['completedTasksCount'] });
-            queryClient.invalidateQueries({ queryKey: ['allTasksCount'] });
+            queryClient.invalidateQueries({ queryKey: ['archivedTasksCount'] });
           }}
         />
       )}

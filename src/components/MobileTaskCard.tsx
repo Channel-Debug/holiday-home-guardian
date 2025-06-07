@@ -122,7 +122,7 @@ const MobileTaskCard = ({
 
         {task.costo_manutenzione && (
           <div>
-            <span className="font-medium text-xs text-gray-600">Costo (IVA esclusa):</span>
+            <span className="font-medium text-xs text-gray-600">Costo (IVA 22% inclusa):</span>
             <p className="text-sm font-medium">{formatCurrency(task.costo_manutenzione)}</p>
           </div>
         )}

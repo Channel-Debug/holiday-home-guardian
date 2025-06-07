@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { X, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
+import ImageViewer from "@/components/ImageViewer";
 import type { Tables } from "@/integrations/supabase/types";
 
 interface TaskImagesProps {
@@ -85,11 +86,18 @@ export const TaskImages = ({ taskId, refresh }: TaskImagesProps) => {
       <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
         {images.map((image) => (
           <div key={image.id} className="relative group">
-            <img
+            <ImageViewer
               src={getImageUrl(image.storage_path)}
               alt={image.file_name}
-              className="w-full h-20 object-cover rounded border"
-            />
+            >
+              <div className="cursor-pointer">
+                <img
+                  src={getImageUrl(image.storage_path)}
+                  alt={image.file_name}
+                  className="w-full h-20 object-cover rounded border hover:opacity-80 transition-opacity"
+                />
+              </div>
+            </ImageViewer>
             <Button
               variant="destructive"
               size="sm"
