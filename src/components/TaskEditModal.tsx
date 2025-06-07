@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -8,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { Trash2 } from "lucide-react";
 import OperatorSelect from "./OperatorSelect";
 import CostInput from "./CostInput";
 import type { Tables } from "@/integrations/supabase/types";
@@ -34,6 +36,7 @@ const TaskEditModal = ({ task, isOpen, onClose, onUpdate }: TaskEditModalProps) 
     costo_manutenzione: task.costo_manutenzione || null,
   });
   const [loading, setLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const { data: houses } = useQuery({
     queryKey: ['houses-edit'],
@@ -76,6 +79,52 @@ const TaskEditModal = ({ task, isOpen, onClose, onUpdate }: TaskEditModalProps) 
       toast.error("Errore nell'aggiornamento della task");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("Sei sicuro di voler eliminare questa task? Questa azione non può essere annullata.")) {
+      return;
+    }
+
+    setDeleteLoading(true);
+
+    try {
+      // Prima eliminiamo le immagini associate
+      const { data: images } = await supabase
+        .from('task_images')
+        .select('storage_path')
+        .eq('task_id', task.id);
+
+      if (images && images.length > 0) {
+        const storagePaths = images.map(img => img.storage_path);
+        await supabase.storage
+          .from('task-images')
+          .remove(storagePaths);
+      }
+
+      // Eliminiamo le immagini dal database
+      await supabase
+        .from('task_images')
+        .delete()
+        .eq('task_id', task.id);
+
+      // Infine eliminiamo la task
+      const { error } = await supabase
+        .from('task')
+        .delete()
+        .eq('id', task.id);
+
+      if (error) throw error;
+
+      toast.success("Task eliminata con successo!");
+      onUpdate();
+      onClose();
+    } catch (error) {
+      console.error('Errore nell\'eliminazione della task:', error);
+      toast.error("Errore nell'eliminazione della task");
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -179,19 +228,31 @@ const TaskEditModal = ({ task, isOpen, onClose, onUpdate }: TaskEditModalProps) 
           <div className="flex gap-4 pt-4">
             <Button 
               type="button" 
-              variant="outline" 
-              onClick={onClose}
-              className="flex-1"
+              variant="destructive" 
+              onClick={handleDelete}
+              disabled={deleteLoading}
+              className="flex items-center gap-2"
             >
-              Annulla
+              <Trash2 className="h-4 w-4" />
+              {deleteLoading ? "Eliminazione..." : "Elimina Task"}
             </Button>
-            <Button 
-              type="submit" 
-              disabled={loading}
-              className="flex-1"
-            >
-              {loading ? "Aggiornamento..." : "Aggiorna Task"}
-            </Button>
+            <div className="flex-1 flex gap-2">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={onClose}
+                className="flex-1"
+              >
+                Annulla
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={loading}
+                className="flex-1"
+              >
+                {loading ? "Aggiornamento..." : "Aggiorna Task"}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>
