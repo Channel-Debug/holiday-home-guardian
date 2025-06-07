@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,9 +63,17 @@ const MobileTaskCard = ({
 
   const getPriorityBackground = (priority: string | null) => {
     switch (priority) {
-      case 'alta': return 'bg-red-500/35';
-      case 'media': return 'bg-yellow-500/35';
+      case 'alta': return 'bg-red-500/35 text-black';
+      case 'media': return 'bg-yellow-500/35 text-black';
       case 'bassa': return 'bg-green-500/35';
+      default: return '';
+    }
+  };
+
+  const getTaskTextColor = (priority: string | null) => {
+    switch (priority) {
+      case 'alta': return 'text-black';
+      case 'media': return 'text-black';
       default: return '';
     }
   };
@@ -88,8 +97,10 @@ const MobileTaskCard = ({
     });
   };
 
+  const taskTextColor = getTaskTextColor(task.priorita);
+
   return (
-    <Card className="w-full">
+    <Card className={`w-full ${taskTextColor}`}>
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
           <CardTitle className="text-base font-semibold line-clamp-2 flex-1">
@@ -106,54 +117,54 @@ const MobileTaskCard = ({
       
       <CardContent className="space-y-2">
         <div>
-          <span className="font-medium text-xs text-gray-600">
+          <span className={`font-medium text-xs ${taskTextColor || 'text-gray-600'}`}>
             {task.tipo_manutenzione === 'casa' ? 'Casa:' : 'Mezzo:'}
           </span>
           <p className="text-sm">
             {task.casa?.nome || task.mezzi?.nome || 'Non specificato'}
           </p>
           {task.casa?.indirizzo && (
-            <p className="text-xs text-gray-500">{task.casa.indirizzo}</p>
+            <p className={`text-xs ${taskTextColor || 'text-gray-500'}`}>{task.casa.indirizzo}</p>
           )}
         </div>
 
         {task.rilevato_da && (
           <div>
-            <span className="font-medium text-xs text-gray-600">Rilevato da:</span>
+            <span className={`font-medium text-xs ${taskTextColor || 'text-gray-600'}`}>Rilevato da:</span>
             <p className="text-sm">{task.rilevato_da}</p>
           </div>
         )}
 
         {task.operatore && (
           <div>
-            <span className="font-medium text-xs text-gray-600">Operatore:</span>
+            <span className={`font-medium text-xs ${taskTextColor || 'text-gray-600'}`}>Operatore:</span>
             <p className="text-sm">{task.operatore}</p>
           </div>
         )}
 
         {task.costo_manutenzione && (
           <div>
-            <span className="font-medium text-xs text-gray-600">Costo (IVA 22% inclusa):</span>
+            <span className={`font-medium text-xs ${taskTextColor || 'text-gray-600'}`}>Costo (IVA 22% inclusa):</span>
             <p className="text-sm font-medium">{formatCurrency(task.costo_manutenzione)}</p>
           </div>
         )}
 
         {task.note && (
           <div>
-            <span className="font-medium text-xs text-gray-600">Note:</span>
+            <span className={`font-medium text-xs ${taskTextColor || 'text-gray-600'}`}>Note:</span>
             <p className="text-sm">{task.note}</p>
           </div>
         )}
 
         <div>
-          <span className="font-medium text-xs text-gray-600">Creata:</span>
-          <p className="text-xs text-gray-500">{formatDate(task.data_creazione)}</p>
+          <span className={`font-medium text-xs ${taskTextColor || 'text-gray-600'}`}>Creata:</span>
+          <p className={`text-xs ${taskTextColor || 'text-gray-500'}`}>{formatDate(task.data_creazione)}</p>
         </div>
 
         {task.data_completamento && (
           <div>
-            <span className="font-medium text-xs text-gray-600">Completata:</span>
-            <p className="text-xs text-gray-500">{formatDate(task.data_completamento)}</p>
+            <span className={`font-medium text-xs ${taskTextColor || 'text-gray-600'}`}>Completata:</span>
+            <p className={`text-xs ${taskTextColor || 'text-gray-500'}`}>{formatDate(task.data_completamento)}</p>
           </div>
         )}
 
@@ -216,7 +227,7 @@ const MobileTaskCard = ({
               <Edit className="h-3 w-3 mr-1" />
               Modifica
             </Button>
-          )}
+            )}
         </div>
       </CardContent>
     </Card>

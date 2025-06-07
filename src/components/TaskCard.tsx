@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,9 +63,17 @@ const TaskCard = ({
 
   const getPriorityBackground = (priority: string | null) => {
     switch (priority) {
-      case 'alta': return 'bg-red-500/35';
-      case 'media': return 'bg-yellow-500/35';
+      case 'alta': return 'bg-red-500/35 text-black';
+      case 'media': return 'bg-yellow-500/35 text-black';
       case 'bassa': return 'bg-green-500/35';
+      default: return '';
+    }
+  };
+
+  const getTaskTextColor = (priority: string | null) => {
+    switch (priority) {
+      case 'alta': return 'text-black';
+      case 'media': return 'text-black';
       default: return '';
     }
   };
@@ -88,8 +97,10 @@ const TaskCard = ({
     });
   };
 
+  const taskTextColor = getTaskTextColor(task.priorita);
+
   return (
-    <Card className="h-full flex flex-col">
+    <Card className={`h-full flex flex-col ${taskTextColor}`}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <CardTitle className="text-lg font-semibold line-clamp-2">
@@ -107,54 +118,54 @@ const TaskCard = ({
       <CardContent className="flex-1 flex flex-col">
         <div className="space-y-3 flex-1">
           <div>
-            <span className="font-medium text-sm text-gray-600">
+            <span className={`font-medium text-sm ${taskTextColor || 'text-gray-600'}`}>
               {task.tipo_manutenzione === 'casa' ? 'Casa:' : 'Mezzo:'}
             </span>
             <p className="text-sm">
               {task.casa?.nome || task.mezzi?.nome || 'Non specificato'}
             </p>
             {task.casa?.indirizzo && (
-              <p className="text-xs text-gray-500">{task.casa.indirizzo}</p>
+              <p className={`text-xs ${taskTextColor || 'text-gray-500'}`}>{task.casa.indirizzo}</p>
             )}
           </div>
 
           {task.rilevato_da && (
             <div>
-              <span className="font-medium text-sm text-gray-600">Rilevato da:</span>
+              <span className={`font-medium text-sm ${taskTextColor || 'text-gray-600'}`}>Rilevato da:</span>
               <p className="text-sm">{task.rilevato_da}</p>
             </div>
           )}
 
           {task.operatore && (
             <div>
-              <span className="font-medium text-sm text-gray-600">Operatore:</span>
+              <span className={`font-medium text-sm ${taskTextColor || 'text-gray-600'}`}>Operatore:</span>
               <p className="text-sm">{task.operatore}</p>
             </div>
           )}
 
           {task.costo_manutenzione && (
             <div>
-              <span className="font-medium text-sm text-gray-600">Costo (IVA 22% inclusa):</span>
+              <span className={`font-medium text-sm ${taskTextColor || 'text-gray-600'}`}>Costo (IVA 22% inclusa):</span>
               <p className="text-sm font-medium">{formatCurrency(task.costo_manutenzione)}</p>
             </div>
           )}
 
           {task.note && (
             <div>
-              <span className="font-medium text-sm text-gray-600">Note:</span>
+              <span className={`font-medium text-sm ${taskTextColor || 'text-gray-600'}`}>Note:</span>
               <p className="text-sm">{task.note}</p>
             </div>
           )}
 
           <div>
-            <span className="font-medium text-sm text-gray-600">Creata il:</span>
-            <p className="text-xs text-gray-500">{formatDate(task.data_creazione)}</p>
+            <span className={`font-medium text-sm ${taskTextColor || 'text-gray-600'}`}>Creata il:</span>
+            <p className={`text-xs ${taskTextColor || 'text-gray-500'}`}>{formatDate(task.data_creazione)}</p>
           </div>
 
           {task.data_completamento && (
             <div>
-              <span className="font-medium text-sm text-gray-600">Completata il:</span>
-              <p className="text-xs text-gray-500">{formatDate(task.data_completamento)}</p>
+              <span className={`font-medium text-sm ${taskTextColor || 'text-gray-600'}`}>Completata il:</span>
+              <p className={`text-xs ${taskTextColor || 'text-gray-500'}`}>{formatDate(task.data_completamento)}</p>
             </div>
           )}
 
