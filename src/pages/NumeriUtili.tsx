@@ -2,14 +2,28 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Phone } from "lucide-react";
+import { Phone, MessageCircle } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const NumeriUtili = () => {
   const isMobile = useIsMobile();
 
   const handleCall = (number: string) => {
-    window.location.href = `tel:+39${number.replace(/\s/g, '')}`;
+    const cleanNumber = number.replace(/\s/g, '');
+    // Prova diversi formati per massimizzare compatibilità
+    if (isMobile) {
+      // Su mobile prova prima il formato diretto
+      window.open(`tel:${cleanNumber}`, '_self');
+    } else {
+      // Su desktop usa il formato con prefisso
+      window.location.href = `tel:+39${cleanNumber}`;
+    }
+  };
+
+  const handleWhatsApp = (number: string) => {
+    const cleanNumber = number.replace(/\s/g, '');
+    const whatsappUrl = `https://wa.me/39${cleanNumber}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   const contacts = [
@@ -74,18 +88,29 @@ const NumeriUtili = () => {
                   key={contactIndex}
                   className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                 >
-                  <div>
+                  <div className="flex-1">
                     <p className="font-medium text-gray-900">{contact.name}</p>
                     <p className="text-sm text-gray-600">{contact.number}</p>
                   </div>
-                  <Button
-                    onClick={() => handleCall(contact.number)}
-                    size="sm"
-                    className="flex items-center gap-2"
-                  >
-                    <Phone className="h-4 w-4" />
-                    Chiama
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => handleCall(contact.number)}
+                      size="sm"
+                      className="flex items-center gap-2"
+                    >
+                      <Phone className="h-4 w-4" />
+                      Chiama
+                    </Button>
+                    <Button
+                      onClick={() => handleWhatsApp(contact.number)}
+                      size="sm"
+                      variant="outline"
+                      className="flex items-center gap-2 bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                      WhatsApp
+                    </Button>
+                  </div>
                 </div>
               ))}
             </CardContent>
