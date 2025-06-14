@@ -31,6 +31,7 @@ const TaskCompletate = () => {
   const { data: tasks, isLoading } = useQuery({
     queryKey: ['completedTasks'],
     queryFn: async () => {
+      console.log('Caricamento task completate...');
       const { data, error } = await supabase
         .from('task')
         .select(`
@@ -39,9 +40,15 @@ const TaskCompletate = () => {
           mezzi:mezzo_id(id, nome, tipo)
         `)
         .eq('stato', 'completata')
-        .order('data_completamento', { ascending: false });
+        .order('data_completamento', { ascending: false, nullsLast: true })
+        .order('data_creazione', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Errore caricamento task completate:', error);
+        throw error;
+      }
+      
+      console.log('Task completate caricate:', data?.length || 0);
       return data as Task[];
     },
   });

@@ -89,69 +89,77 @@ const TaskEditModal = ({ task, isOpen, onClose, onUpdate }: TaskEditModalProps) 
     }
 
     setDeleteLoading(true);
+    console.log('=== INIZIO ELIMINAZIONE TASK ===');
+    console.log('Task ID da eliminare:', task.id);
 
     try {
-      console.log('Iniziando eliminazione task:', task.id);
-
-      // Prima eliminiamo le immagini associate dal database
+      // Step 1: Recupero e eliminazione immagini
+      console.log('Step 1: Recupero immagini associate...');
       const { data: images, error: imagesQueryError } = await supabase
         .from('task_images')
-        .select('storage_path')
+        .select('*')
         .eq('task_id', task.id);
 
       if (imagesQueryError) {
-        console.error('Errore nel recupero immagini:', imagesQueryError);
-        throw imagesQueryError;
+        console.error('ERRORE nel recupero immagini:', imagesQueryError);
+        throw new Error(`Errore recupero immagini: ${imagesQueryError.message}`);
       }
 
-      console.log('Immagini trovate:', images);
+      console.log('Immagini trovate:', images?.length || 0, images);
 
-      // Eliminiamo i file dallo storage se esistono
+      // Step 2: Eliminazione file dallo storage
       if (images && images.length > 0) {
+        console.log('Step 2: Eliminazione file dallo storage...');
         const storagePaths = images.map(img => img.storage_path);
-        console.log('Eliminando file dallo storage:', storagePaths);
+        console.log('Percorsi file da eliminare:', storagePaths);
         
-        const { error: storageError } = await supabase.storage
+        const { data: storageDeleteData, error: storageError } = await supabase.storage
           .from('task-images')
           .remove(storagePaths);
 
+        console.log('Risultato eliminazione storage:', { data: storageDeleteData, error: storageError });
+        
         if (storageError) {
-          console.error('Errore eliminazione storage:', storageError);
-          // Non blocchiamo l'eliminazione se fallisce lo storage
+          console.warn('Errore eliminazione storage (continuo comunque):', storageError);
         }
       }
 
-      // Eliminiamo le immagini dal database
+      // Step 3: Eliminazione record immagini dal database
+      console.log('Step 3: Eliminazione record immagini dal database...');
       const { error: deleteImagesError } = await supabase
         .from('task_images')
         .delete()
         .eq('task_id', task.id);
 
       if (deleteImagesError) {
-        console.error('Errore eliminazione immagini dal database:', deleteImagesError);
-        throw deleteImagesError;
+        console.error('ERRORE eliminazione immagini dal database:', deleteImagesError);
+        throw new Error(`Errore eliminazione immagini DB: ${deleteImagesError.message}`);
       }
+      console.log('Immagini eliminate dal database con successo');
 
-      // Infine eliminiamo la task
+      // Step 4: Eliminazione task
+      console.log('Step 4: Eliminazione task dal database...');
       const { error: deleteTaskError } = await supabase
         .from('task')
         .delete()
         .eq('id', task.id);
 
       if (deleteTaskError) {
-        console.error('Errore eliminazione task:', deleteTaskError);
-        throw deleteTaskError;
+        console.error('ERRORE eliminazione task:', deleteTaskError);
+        throw new Error(`Errore eliminazione task: ${deleteTaskError.message}`);
       }
 
-      console.log('Task eliminata con successo');
+      console.log('=== TASK ELIMINATA CON SUCCESSO ===');
       toast.success("Task eliminata con successo!");
       onUpdate();
       onClose();
     } catch (error) {
-      console.error('Errore nell\'eliminazione della task:', error);
-      toast.error("Errore nell'eliminazione della task");
+      console.error('=== ERRORE DURANTE ELIMINAZIONE ===');
+      console.error('Errore completo:', error);
+      toast.error(`Errore nell'eliminazione: ${error instanceof Error ? error.message : 'Errore sconosciuto'}`);
     } finally {
       setDeleteLoading(false);
+      console.log('=== FINE PROCESSO ELIMINAZIONE ===');
     }
   };
 
