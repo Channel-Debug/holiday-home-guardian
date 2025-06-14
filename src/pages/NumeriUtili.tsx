@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,19 +10,20 @@ const NumeriUtili = () => {
 
   const handleCall = (number: string) => {
     const cleanNumber = number.replace(/\s/g, '');
-    // Prova diversi formati per massimizzare compatibilità
-    if (isMobile) {
-      // Su mobile prova prima il formato diretto
-      window.open(`tel:${cleanNumber}`, '_self');
-    } else {
-      // Su desktop usa il formato con prefisso
-      window.location.href = `tel:+39${cleanNumber}`;
-    }
+    console.log("Tentativo di chiamata:", cleanNumber);
+    
+    // Crea il link tel: direttamente
+    const telLink = `tel:${cleanNumber}`;
+    console.log("Link tel generato:", telLink);
+    
+    // Usa window.location.href per massima compatibilità
+    window.location.href = telLink;
   };
 
   const handleWhatsApp = (number: string) => {
     const cleanNumber = number.replace(/\s/g, '');
     const whatsappUrl = `https://wa.me/39${cleanNumber}`;
+    console.log("Link WhatsApp generato:", whatsappUrl);
     window.open(whatsappUrl, '_blank');
   };
 
