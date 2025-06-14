@@ -40,7 +40,7 @@ const TaskCompletate = () => {
           mezzi:mezzo_id(id, nome, tipo)
         `)
         .eq('stato', 'completata')
-        .order('data_completamento', { ascending: false, nullsLast: true })
+        .order('data_completamento', { ascending: false, nullsFirst: false })
         .order('data_creazione', { ascending: false });
       
       if (error) {
