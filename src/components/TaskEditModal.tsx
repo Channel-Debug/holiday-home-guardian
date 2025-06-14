@@ -122,20 +122,22 @@ const TaskEditModal = ({ task, isOpen, onClose, onUpdate }: TaskEditModalProps) 
         if (storageError) {
           console.warn('Errore eliminazione storage (continuo comunque):', storageError);
         }
-      }
 
-      // Step 3: Eliminazione record immagini dal database
-      console.log('Step 3: Eliminazione record immagini dal database...');
-      const { error: deleteImagesError } = await supabase
-        .from('task_images')
-        .delete()
-        .eq('task_id', task.id);
+        // Step 3: Eliminazione record immagini dal database
+        console.log('Step 3: Eliminazione record immagini dal database...');
+        const { error: deleteImagesError } = await supabase
+          .from('task_images')
+          .delete()
+          .eq('task_id', task.id);
 
-      if (deleteImagesError) {
-        console.error('ERRORE eliminazione immagini dal database:', deleteImagesError);
-        throw new Error(`Errore eliminazione immagini DB: ${deleteImagesError.message}`);
+        if (deleteImagesError) {
+          console.error('ERRORE eliminazione immagini dal database:', deleteImagesError);
+          throw new Error(`Errore eliminazione immagini DB: ${deleteImagesError.message}`);
+        }
+        console.log('Immagini eliminate dal database con successo');
+      } else {
+        console.log('Nessuna immagine da eliminare');
       }
-      console.log('Immagini eliminate dal database con successo');
 
       // Step 4: Eliminazione task
       console.log('Step 4: Eliminazione task dal database...');
@@ -151,8 +153,11 @@ const TaskEditModal = ({ task, isOpen, onClose, onUpdate }: TaskEditModalProps) 
 
       console.log('=== TASK ELIMINATA CON SUCCESSO ===');
       toast.success("Task eliminata con successo!");
-      onUpdate();
+      
+      // Chiudi il modal e aggiorna la lista
       onClose();
+      onUpdate();
+      
     } catch (error) {
       console.error('=== ERRORE DURANTE ELIMINAZIONE ===');
       console.error('Errore completo:', error);
