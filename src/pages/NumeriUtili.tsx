@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -92,7 +91,7 @@ const NumeriUtili = () => {
                     <p className="font-medium text-gray-900">{contact.name}</p>
                     <p className="text-sm text-gray-600">{contact.number}</p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 items-center">
                     <Button
                       onClick={() => handleCall(contact.number)}
                       size="sm"
@@ -103,12 +102,11 @@ const NumeriUtili = () => {
                     </Button>
                     <Button
                       onClick={() => handleWhatsApp(contact.number)}
-                      size="sm"
+                      size="icon"
                       variant="outline"
-                      className="flex items-center gap-2 bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                      className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100 h-9 w-9"
                     >
                       <MessageCircle className="h-4 w-4" />
-                      WhatsApp
                     </Button>
                   </div>
                 </div>
