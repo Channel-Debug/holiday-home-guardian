@@ -13,6 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import NuovaTask from "./pages/NuovaTask";
 import TaskCompletate from "./pages/TaskCompletate";
 import Archiviati from "./pages/Archiviati";
+import NumeriUtili from "./pages/NumeriUtili";
 import EsportaReport from "./pages/EsportaReport";
 import ImportCSV from "./pages/ImportCSV";
 import Profilo from "./pages/Profilo";
@@ -65,6 +66,7 @@ function App() {
                 <Route path="nuova-task" element={<NuovaTask />} />
                 <Route path="task-completate" element={<TaskCompletate />} />
                 <Route path="archiviati" element={<Archiviati />} />
+                <Route path="numeri-utili" element={<NumeriUtili />} />
                 <Route path="esporta-report" element={<EsportaReport />} />
                 <Route path="import-csv" element={<ImportCSV />} />
                 <Route path="profilo" element={<Profilo />} />

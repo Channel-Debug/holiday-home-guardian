@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -11,7 +12,7 @@ import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { Tables } from "@/integrations/supabase/types";
 
-type CompletedTask = Tables<"task"> & {
+type TaskWithRelations = Tables<"task"> & {
   casa: Tables<"casa"> | null;
 };
 
@@ -23,8 +24,8 @@ const EsportaReport = () => {
   const [isExporting, setIsExporting] = useState(false);
   const isMobile = useIsMobile();
 
-  const { data: completedTasks } = useQuery({
-    queryKey: ['completed-tasks-export', filterType, selectedMonth, dateFrom, dateTo],
+  const { data: tasks } = useQuery({
+    queryKey: ['tasks-export', filterType, selectedMonth, dateFrom, dateTo],
     queryFn: async () => {
       let startDate: string;
       let endDate: string;
@@ -40,47 +41,32 @@ const EsportaReport = () => {
         endDate = new Date(dateTo + "T23:59:59").toISOString();
       }
 
-      console.log('Query parameters:', { startDate, endDate });
+      console.log('Query parameters per data_creazione:', { startDate, endDate });
 
-      // Prima controlliamo tutte le task per vedere gli stati disponibili
-      const { data: allTasks, error: allTasksError } = await supabase
-        .from('task')
-        .select('stato, data_completamento')
-        .not('data_completamento', 'is', null);
-
-      if (allTasksError) {
-        console.error('Errore nel recupero di tutte le task:', allTasksError);
-      } else {
-        console.log('Tutte le task con data_completamento:', allTasks);
-        const uniqueStates = [...new Set(allTasks.map(task => task.stato))];
-        console.log('Stati unici trovati:', uniqueStates);
-      }
-
-      // Ora facciamo la query principale cercando task con data_completamento non null
+      // Query per task CREATE nel periodo specificato
       const { data, error } = await supabase
         .from('task')
         .select(`
           *,
           casa (*)
         `)
-        .not('data_completamento', 'is', null)
-        .gte('data_completamento', startDate)
-        .lte('data_completamento', endDate)
-        .order('data_completamento', { ascending: false });
+        .gte('data_creazione', startDate)
+        .lte('data_creazione', endDate)
+        .order('data_creazione', { ascending: false });
 
       if (error) {
         console.error('Errore nella query principale:', error);
         throw error;
       }
       
-      console.log('Task trovate con data_completamento nel periodo:', data);
-      return data as CompletedTask[];
+      console.log('Task trovate con data_creazione nel periodo:', data);
+      return data as TaskWithRelations[];
     },
     enabled: filterType === "month" || (filterType === "custom" && !!dateFrom && !!dateTo)
   });
 
   const generateCSV = () => {
-    if (!completedTasks || completedTasks.length === 0) {
+    if (!tasks || tasks.length === 0) {
       toast.error("Nessuna task trovata per il periodo selezionato");
       return;
     }
@@ -88,7 +74,7 @@ const EsportaReport = () => {
     // Intestazioni CSV in italiano
     const headers = [
       "Nome Casa",
-      "Data e Ora Task",
+      "Data e Ora Creazione Task",
       "Descrizione",
       "Priorità",
       "Rilevato da",
@@ -99,7 +85,7 @@ const EsportaReport = () => {
     ];
 
     // Genera i dati CSV
-    const csvData = completedTasks.map(task => [
+    const csvData = tasks.map(task => [
       task.casa?.nome || "N/A",
       task.data_creazione ? new Date(task.data_creazione).toLocaleString('it-IT') : "N/A",
       task.descrizione || "N/A",
@@ -125,11 +111,11 @@ const EsportaReport = () => {
     if (filterType === "month") {
       const date = new Date(selectedMonth);
       const monthName = date.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
-      fileName = `report-task-completate_${monthName.replace(' ', '-')}.csv`;
+      fileName = `report-task-create_${monthName.replace(' ', '-')}.csv`;
     } else {
       const fromFormatted = new Date(dateFrom).toLocaleDateString('it-IT').replace(/\//g, '-');
       const toFormatted = new Date(dateTo).toLocaleDateString('it-IT').replace(/\//g, '-');
-      fileName = `report-task-completate_${fromFormatted}_${toFormatted}.csv`;
+      fileName = `report-task-create_${fromFormatted}_${toFormatted}.csv`;
     }
 
     // Download del file
@@ -245,10 +231,10 @@ const EsportaReport = () => {
           )}
 
           {/* Info task trovate */}
-          {completedTasks && (
+          {tasks && (
             <div className="bg-blue-50 p-4 rounded-lg">
               <p className="text-sm text-blue-700">
-                <strong>{completedTasks.length}</strong> task completate trovate per il periodo selezionato
+                <strong>{tasks.length}</strong> task create trovate per il periodo selezionato
               </p>
             </div>
           )}
@@ -256,7 +242,7 @@ const EsportaReport = () => {
           {/* Bottone esportazione */}
           <Button 
             onClick={handleExport}
-            disabled={isExporting || !completedTasks || completedTasks.length === 0}
+            disabled={isExporting || !tasks || tasks.length === 0}
             className="w-full"
             size="lg"
           >
@@ -268,6 +254,7 @@ const EsportaReport = () => {
           <div className="text-xs text-gray-500 space-y-1">
             <p><strong>Formato file:</strong> CSV UTF-8 con separatore ";" (compatibile Excel)</p>
             <p><strong>Campi inclusi:</strong> Casa, Date, Descrizione, Priorità, Operatore, Costi</p>
+            <p><strong>Filtro:</strong> Task create nel periodo selezionato</p>
           </div>
         </CardContent>
       </Card>

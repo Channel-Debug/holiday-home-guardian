@@ -12,7 +12,8 @@ import {
   X,
   Download,
   Archive,
-  LogOut
+  LogOut,
+  Phone
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -39,6 +40,7 @@ const MobileOptimizedLayout = () => {
     { name: "Nuova Task", href: "/nuova-task", icon: Plus },
     { name: "Task Completate", href: "/task-completate", icon: CheckCircle },
     { name: "Archiviati", href: "/archiviati", icon: Archive },
+    { name: "Numeri Utili", href: "/numeri-utili", icon: Phone },
     { name: "Esporta Report", href: "/esporta-report", icon: Download },
     { name: "Import CSV", href: "/import-csv", icon: Upload },
     { name: "Profilo", href: "/profilo", icon: User },

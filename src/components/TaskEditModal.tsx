@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -90,33 +91,59 @@ const TaskEditModal = ({ task, isOpen, onClose, onUpdate }: TaskEditModalProps) 
     setDeleteLoading(true);
 
     try {
-      // Prima eliminiamo le immagini associate
-      const { data: images } = await supabase
+      console.log('Iniziando eliminazione task:', task.id);
+
+      // Prima eliminiamo le immagini associate dal database
+      const { data: images, error: imagesQueryError } = await supabase
         .from('task_images')
         .select('storage_path')
         .eq('task_id', task.id);
 
+      if (imagesQueryError) {
+        console.error('Errore nel recupero immagini:', imagesQueryError);
+        throw imagesQueryError;
+      }
+
+      console.log('Immagini trovate:', images);
+
+      // Eliminiamo i file dallo storage se esistono
       if (images && images.length > 0) {
         const storagePaths = images.map(img => img.storage_path);
-        await supabase.storage
+        console.log('Eliminando file dallo storage:', storagePaths);
+        
+        const { error: storageError } = await supabase.storage
           .from('task-images')
           .remove(storagePaths);
+
+        if (storageError) {
+          console.error('Errore eliminazione storage:', storageError);
+          // Non blocchiamo l'eliminazione se fallisce lo storage
+        }
       }
 
       // Eliminiamo le immagini dal database
-      await supabase
+      const { error: deleteImagesError } = await supabase
         .from('task_images')
         .delete()
         .eq('task_id', task.id);
 
+      if (deleteImagesError) {
+        console.error('Errore eliminazione immagini dal database:', deleteImagesError);
+        throw deleteImagesError;
+      }
+
       // Infine eliminiamo la task
-      const { error } = await supabase
+      const { error: deleteTaskError } = await supabase
         .from('task')
         .delete()
         .eq('id', task.id);
 
-      if (error) throw error;
+      if (deleteTaskError) {
+        console.error('Errore eliminazione task:', deleteTaskError);
+        throw deleteTaskError;
+      }
 
+      console.log('Task eliminata con successo');
       toast.success("Task eliminata con successo!");
       onUpdate();
       onClose();
